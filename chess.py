@@ -72,6 +72,20 @@ class Piece:
             pass
 
 
+
+
+# Data structure which holds the positional information of the pieces
+board = [
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None],
+        [None,None,None,None,None,None,None,None]
+        ]
+
 def threatened_pieces(piece):
     """Returns a list of pieces which are threathened by the parameter piece.
     """
@@ -86,6 +100,12 @@ def in_check(piece):
     else:
         return None
 
+
+def initialze_game(board):
+    """Puts all the pieces into their starting positions.
+    """
+    for square in board[1]:
+        square = Piece("pawn")
 
 def main():
    
