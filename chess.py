@@ -8,38 +8,96 @@ Chess
 
 
 import tkinter as tk
+import os
 
 class Gui:
     """
     """
-    def __init__(self):
+    def __init__(self, board):
         """Initializes the gui-object with an empty chessboard
         and a menu.
         """
+        
+        self.__board = board
         self.__mainwindow = tk.Tk()
-        self.__buttons = []
+        self.__piece_images = {}
+
+        # Save the piece images into a dict
+        # Value is a PhotoImage -object
+        for i in os.listdir("pieces/Cburnett"):
+            self.__piece_images[i.replace(".png","")] = \
+            tk.PhotoImage(file=f"pieces/Cburnett/{i}")
+        
+        # Squares
+        self.__squares = []
         for x in range(1,9):
             self.__row = []
             for y in range(1,9):
-                self.__button = tk.Button(self.__mainwindow,\
-                    width=10, height=5, borderwidth=1)
-                self.__button.grid(row=x, column=y)
+                self.__square = tk.Button(self.__mainwindow,\
+                    width=10, height=5, borderwidth=0, bg="#f0e1c7")
+                self.__square.grid(row=x, column=y)
                 if x % 2 == 0 and y % 2 != 0:
-                    self.__button.config(bg="brown")
+                    self.__square.config(bg="#a1784f")
                 elif x % 2 != 0 and y % 2 == 0:
-                    self.__button.config(bg="brown")
-                self.__row.append(self.__button)
-            self.__buttons.append(self.__row)
+                    self.__square.config(bg="#a1784f")
+                self.__row.append(self.__square)
+            self.__squares.append(self.__row)
 
+        # Menubar
         self.__menubar = tk.Menu(self.__mainwindow)
-        self.__file_menu = tk.Menu(self.__menubar)
-        self.__file_menu.add_command(label="Load position")
-        self.__menubar.add_cascade(menu=self.__file_menu, label="File")
+
+        # Game menu
+        self.__game_menu = tk.Menu(self.__menubar)
+        self.__game_menu.add_command(label="Load position")
+        self.__game_menu.add_command(label="Reset position")
+        self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
+        
+        # Settings menu
+        self.__settings_menu = tk.Menu(self.__menubar)
+        self.__settings_menu.add_command(label="Game")
+        self.__settings_menu.add_command(label="Style")
+        self.__settings_menu.add_command(label="Network")
+        self.__menubar.add_cascade(menu=self.__settings_menu, label="Settings")
+
+
         self.__mainwindow.config(menu=self.__menubar)
+        
+
+        # Labels
+        for y in range(1,9):
+            y_label = tk.Label(self.__mainwindow, text=str(y))
+            y_label.grid(column=9, row=y)
+
+        letters = ["A","B","C","D","E","F","G","H"]
+
+        for x in range(1,9):
+            x_label = tk.Label(self.__mainwindow, text=letters[x - 1])
+            x_label.grid(column=x, row=9)
+
+
+
+        # This should be its own method when I figure out
+        # how to update the gui after init
+        for row_count, row in enumerate(self.__board):
+            for columnn_count, square in enumerate(row):
+                if square != None:
+                    # PhotoImage -object needs to be assigned to a variable
+                    # because of garbage collection.
+                    image_file = f"pieces/Cburnett/{str(board[row_count][columnn_count])}.png"
+
+                    self.__squares[row_count][columnn_count].config(
+                        image=self.__piece_images[f"{str(board[row_count][columnn_count])}"],
+                        width=75,
+                        height = 75
+                        )
+                else:
+                    continue
+    
+
         self.__mainwindow.mainloop()        
 
 
-    def set_position(self, board):
+    def load_position(self, board):
         """Sets the pieces to the correct places given by 
         the <board> parameter.
 
@@ -47,7 +105,7 @@ class Gui:
         """
         
 
-
+                
 
 class Piece:
     """
@@ -69,7 +127,7 @@ class Piece:
     def __str__(self):
         """
         """
-        return f"{self.__color} {self.__category}"
+        return f"{self.__color}_{self.__category}"
 
 
 
@@ -116,7 +174,7 @@ pieces = {
         }
 
 
-def load_position(board, pieces, fen_string):
+def set_position(board, pieces, fen_string):
     row = 0
     column = 0
     while row < 8:
@@ -137,8 +195,6 @@ def load_position(board, pieces, fen_string):
                 column += int(char)
 
             else:
-                print(row)
-
                 board[row][column] = pieces[char]
                 column += 1
 
@@ -146,7 +202,7 @@ def load_position(board, pieces, fen_string):
 def print_board(board):
     """for debug purposes
     """
-    load_position(board, pieces, START_POSITION)
+    set_position(board, pieces, START_POSITION)
     count = 0
     for row in board:
         for piece in row:
@@ -159,9 +215,10 @@ def print_board(board):
                 count += 1
 
 def main():
-    load_position(board, pieces, START_POSITION)
+    set_position(board, pieces, START_POSITION)
     print_board(board)
-    gui = Gui()
+    gui = Gui(board)
+    
 
 if __name__ == '__main__':
     main()
