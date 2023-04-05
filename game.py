@@ -1,5 +1,3 @@
-
-
 # Maybe have an instance of Game class for each game.
 # When a new game is started create new Game object.
 class Game():
@@ -23,8 +21,8 @@ class Game():
         [None,None,None,None,None,None,None,None]
         ]
 
-        
-        self.__pieces = "pPnNbBrRqQkK"
+        # Data structure which records moves
+        self.__moves = []
 
 
     def get_board(self):
@@ -33,7 +31,6 @@ class Game():
         return self.__board
     
     
-
     def set_position(self, fen_string = START_POSITION):
         """Interprates position information in Forsyth-Edwards Notation
         given in <fen_string> and places the pieces to the right places
@@ -72,9 +69,52 @@ class Game():
             except (KeyError, ValueError, IndexError,):
                 print("invalid")
 
+    def list_to_fen(self):
+        """Coverts the position information in <self.__board> 
+        into a FEN-string.
+        :param board: list, data structure for holding positional information
+        :return: str, position as FEN-string
+        """
+        output_fen = ""
+        empty_square_count = 0
+        column_count = 0
+        row_count = 0
+        for row in self.__board:
+            for square in row:
+                if column_count == 7:
+                    output_fen += str(empty_square_count + 1)
+                    if row_count != 7:
+                        output_fen += "/"
+                    column_count = 0
+                    empty_square_count = 0
+                elif isinstance(square, str):
+                    if empty_square_count != 0:
+                        output_fen += str(empty_square_count)
+                    output_fen += square
+                    empty_square_count = 0
+                    column_count += 1
+                else:
+                    empty_square_count += 1
+                    column_count += 1
+            row_count += 1
+
+        return output_fen
+    
+
+    def move_piece(self, old_pos, new_pos):
+        """Takes in the old and new positions of the piece to be moved
+        as a tuple: (row, column) and oves the piece in <self.__board>
+        accordingly.
+        """
+        
+        piece = self.__board[old_pos[0]][old_pos[1]]
+        self.__board[old_pos[0]][old_pos[1]] = None
+        self.__board[new_pos[0]][new_pos[1]] = piece
 
 
     def record_move(self):
+        """
+        """
         return
 
 
