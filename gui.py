@@ -8,10 +8,11 @@ Chess gui
 
 import tkinter as tk
 import os
+from game import Game
 
 
 class Gui:
-    """
+    """This class handles the gui for the chess game.
     """
     def __init__(self):
         
@@ -23,7 +24,14 @@ class Gui:
         self.__piece_images = {}
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
         self.__new_color = "lightblue"
-
+        # Init an instance of the game class to handle the logic
+        self.__game = Game()
+        self.__game.set_position()
+        
+        #Debug
+        # self.__game.print_board()
+        
+        
         # Save the piece images into a dict
         # Value is a PhotoImage -object
         # PhotoImage -object needs to be assigned to a variable
@@ -88,7 +96,10 @@ class Gui:
                                text=letters[x - 1], font=("Arial", 12)
                                )
             x_label.grid(column=x, row=9)
-        
+
+        # Load start position
+        self.load_position(self.__game.get_board())
+
 
     def change_square_color(self, row, column):
         """Changes the color of a square in the chessboard.
@@ -144,16 +155,17 @@ class Gui:
         usr_input = tk.StringVar(popup)
         entry = tk.Entry(popup,textvariable=usr_input, width=65)
         entry.grid(padx=50, pady=50, row=0, column=0)
+        # TODO: add error message when self.__game.set_position(entry.get())
+        # returns False
         load_button = tk.Button(
                       popup, text="Load", 
                       command=lambda: [
-                            set_position(board, pieces, entry.get()),
-                            self.load_position(board)]
+                            self.__game.set_position(entry.get()),
+                            self.load_position(self.__game.get_board())]
                       )
         load_button.grid(row=1, column=0)
 
 
-    
     def load_position(self, board):
         """Sets the pieces to the correct places given by 
         the <board> parameter.
@@ -176,132 +188,19 @@ class Gui:
                         width= 75,
                         height = 75
                         )
-
+    
+    def move_piece(self):
+        return
+        
 
     def mainloop(self):
         self.__mainwindow.mainloop()
 
 
-class Piece:
-    """
-    """
-    def __init__(self, category, color):
-        self.__category = category
-        self.__color = color
-
-    def get_category(self):
-        """
-        """
-        return self.__category
-    
-    def get_color(self):
-        """
-        """
-        return self.__color
-    
-    def __str__(self):
-        """
-        """
-        return f"{self.__color}_{self.__category}"
-
-
-# Data structure which holds the positional information of the pieces
-board = [
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None]
-        ]
-
-START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-
-pieces = {
-        "p": Piece("pawn", "b"), "P": Piece("pawn", "w"),
-        "n": Piece("knight", "b"), "N": Piece("knight", "w"),
-        "b": Piece("bishop", "b"), "B": Piece("bishop", "w"),
-        "r": Piece("rook", "b"), "R": Piece("rook", "w"),
-        "q": Piece("queen", "b"), "Q": Piece("queen", "w"),
-        "k": Piece("king", "b"), "K": Piece("king", "w")
-        }
-
-
-def threatened_pieces(piece, board):
-    """Returns a list of pieces which are threathened by the parameter piece.
-    """
-    return
-    
-def legal_moves(piece, board):
-    """
-    """
-    return
-
-def in_check(piece):
-    """
-    """
-    if piece.get_category() == "king":
-        return None
-    else:
-        return None
-
-
-def set_position(board, pieces, fen_string):
-    """Interprates position information in Forsyth-Edwards Notation
-    given in <fen_string> and places the pieces to the right places
-    in <board>.
-
-    :param board: list[Piece | None], data structure which holds the 
-                  positional information of pieces.
-    :param pieces: dict{str: Piece}, data structure which maps characters used 
-                   in FEN to the corresponding Piece-objects 
-    :param fen_string: str, position information in Forsyth-Edwards
-                       Notation (FEN)
-    """
-    row = 0
-    column = 0
-    while row < 8:
-        for char in fen_string:
-            if char == "/":
-                column = 0
-                row += 1
-            elif column == 8:
-                column = 0
-                row += 1
-            elif row == 8:
-                break
-            elif char.isnumeric():
-                for i in range(column, column + int(char)):
-                    board[row][i] = None
-                column += int(char)
-            else:
-                board[row][column] = pieces[char]
-                column += 1
-
-
-def print_board(board):
-    """for debug purposes
-    """
-    count = 0
-    for row in board:
-        for piece in row:
-            if count == 7:
-                print("{:<8}".format(str(piece)))
-                count = 0
-            else:
-                print("{:<8}".format(str(piece)), end=" ")
-                count += 1
-
 
 def main():
-    set_position(board, pieces, START_POSITION)
     gui = Gui()
-    gui.load_position(board)
     gui.mainloop()
-    set_position(board, pieces, "4R3/8/8/2Pkp3/N7/4rnKB/1nb5/b1r5")
-    print_board(board)
 
 if __name__ == '__main__':
     main()
