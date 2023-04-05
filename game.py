@@ -23,16 +23,8 @@ class Game():
         [None,None,None,None,None,None,None,None]
         ]
 
-        # Data structure which maps characters used in FEN 
-        # to the corresponding Piece-objects.
-        self.__pieces = {
-        "p": Piece("pawn", "b"), "P": Piece("pawn", "w"),
-        "n": Piece("knight", "b"), "N": Piece("knight", "w"),
-        "b": Piece("bishop", "b"), "B": Piece("bishop", "w"),
-        "r": Piece("rook", "b"), "R": Piece("rook", "w"),
-        "q": Piece("queen", "b"), "Q": Piece("queen", "w"),
-        "k": Piece("king", "b"), "K": Piece("king", "w")
-        }
+        
+        self.__pieces = "pPnNbBrRqQkK"
 
 
     def get_board(self):
@@ -73,7 +65,7 @@ class Game():
                                 self.__board[row][i] = None
                             column += int(char)
                         else:
-                            self.__board[row][column] = self.__pieces[char]
+                            self.__board[row][column] = char
                             column += 1
                 return True
 
@@ -119,28 +111,3 @@ class Game():
                 else:
                     print("{:<8}".format(str(piece)), end=" ")
                     count += 1
-
-
-class Piece:
-    """
-    """
-    def __init__(self, category, color):
-        """
-        """
-        self.__category = category
-        self.__color = color
-
-    def get_category(self):
-        """
-        """
-        return self.__category
-    
-    def get_color(self):
-        """
-        """
-        return self.__color
-    
-    def __str__(self):
-        """
-        """
-        return f"{self.__color}_{self.__category}"

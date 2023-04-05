@@ -29,16 +29,18 @@ class Gui:
         self.__game.set_position()
         
         #Debug
-        # self.__game.print_board()
+        self.__game.print_board()
         
         
         # Save the piece images into a dict
         # Value is a PhotoImage -object
         # PhotoImage -object needs to be assigned to a variable
         # because of garbage collection.
+        # The keys in self.__piece_images are named color_category
         for i in os.listdir("pieces/Cburnett"):
             self.__piece_images[i.replace(".png","")] = \
             tk.PhotoImage(file=f"pieces/Cburnett/{i}")
+        
         
         # Squares
         self.__squares = []
@@ -173,12 +175,22 @@ class Gui:
         :param board: list, pieces in the data structure
         """
         
+        # This dict matches self.__piece_images's keys with FEN
+        # which is used in <board>
+        piece_dict = {
+                "p": "b_pawn", "P": "w_pawn",
+                "n": "b_knight", "N": "w_knight",
+                "b": "b_bishop", "B": "w_bishop",
+                "r": "b_rook", "R": "w_rook",
+                "q": "b_queen", "Q": "w_queen",
+                "k": "b_king", "K": "w_king"
+                }
         for row_count, row in enumerate(board):
             for columnn_count, square in enumerate(row):
                 if square != None:
                     self.__squares[row_count][columnn_count].config(
                         image=self.__piece_images[
-                        f"{str(board[row_count][columnn_count])}"],
+                        f"{piece_dict[board[row_count][columnn_count]]}"],
                         width=75,
                         height = 75
                         )
