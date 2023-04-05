@@ -1,7 +1,6 @@
 """
 COMP.CS.100 
 Tekijä: Oskari Heinonen
-Opiskelijanumero: 151242115
 
 Chess gui
 """
