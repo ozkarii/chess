@@ -28,9 +28,6 @@ class Gui:
         self.__game = Game()
         self.__game.set_position()
         
-        #Debug
-        self.__game.print_board()
-        
         
         # Save the piece images into a dict
         # Value is a PhotoImage -object
@@ -63,7 +60,8 @@ class Gui:
         for row_count, row in enumerate(self.__squares):
             for column_count, square in enumerate(row):
                 square.config(command=lambda row=row_count, 
-                              column=column_count: self.change_square_color(row, column)
+                              column=column_count: [self.change_square_color(row, column),
+                              self.move_piece(row, column)]
                               )
 
         # Menubar
@@ -201,18 +199,53 @@ class Gui:
                         height = 75
                         )
     
-    def move_piece(self):
-        return
+
+
+    def move_piece(self, row, column):
+        """
+        """
+
+        try:
+            print(self.__selected_square_1)
+            if self.__selected_square_1 != None:
+                self.__game.get_board()[row][column] = None
+                self.__selected_square_2 = self.__selected_square_1
+                self.__selected_square_1 = None
+            
+            elif self.__selected_square_1 == None:
+                self.__game.get_board()[row][column] = self.__selected_square_2
         
+        except AttributeError:
+            print("lol")
+            self.__selected_square_1 = self.__game.get_board()[row][column]
+
+        self.load_position(self.__game.get_board())
+
+            
+
 
     def mainloop(self):
+        """
+        """
         self.__mainwindow.mainloop()
+
+    
+    def debug(self):
+        """This method is used for debugging by executing 
+        it from the main function.
+        """
+        
+        # self.__game.move_piece((1,0), (2,0))
+        # self.load_position(self.__game.get_board())
+        self.__game.print_board()
 
 
 
 def main():
     gui = Gui()
+    # gui.debug()  
     gui.mainloop()
+    
 
 if __name__ == '__main__':
     main()
