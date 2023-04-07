@@ -10,6 +10,7 @@ import os
 from game import Game
 
 
+
 class Gui:
     """This class handles the gui for the chess game.
     """
@@ -248,20 +249,6 @@ class Gui:
             self.__first_click = True
 
 
-
-    # def move_piece(self, old_pos, new_pos = (None,None)):
-    #     """
-    #     """
-    #     if self.__first_click:
-    #         self.__old_position = old_pos
-    #         self.__first_click = False
-        
-    #     elif not self.__first_click:
-    #         self.__game.move_piece(old_pos, new_pos)
-    #         self.__first_click = True
-            
-
-
     def mainloop(self):
         """Executes mainloop for <self.__mainwindow>.
         """
@@ -273,15 +260,7 @@ class Gui:
         it from the main function.
         """
         
-        # self.__game.move_piece((1,0), (2,0))
-        # self.load_position(self.__game.get_board())
-        # self.load_position(self.__game.get_board())
-        # self.__game.print_board()
-        # current_board = self.__game.get_board()
-        # print(self.__game.list_to_fen())
-
-
-
+        
 def main():
     gui = Gui()
     gui.mainloop()

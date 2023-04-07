@@ -75,6 +75,7 @@ class Game:
             except (KeyError, ValueError, IndexError,):
                 print("invalid")
 
+
     def list_to_fen(self):
         """Coverts the position information in <self.__board> 
         into a FEN-string.
@@ -120,33 +121,6 @@ class Game:
         self.__board[old_pos[0]][old_pos[1]] = None
         self.__board[new_pos[0]][new_pos[1]] = piece
 
-
-    def record_move(self):
-        """
-        """
-        return
-
-
-    def threatened_pieces(piece, board):
-        """Returns a list of pieces which are threathened by the parameter piece.
-        """
-        return
-    
-
-    def legal_moves(piece, board):
-        """
-        """
-        return
-
-
-    def in_check(piece):
-        """
-        """
-        if piece.get_category() == "king":
-            return None
-        else:
-            return None
-        
 
     def print_board(self):
         """for debug purposes
