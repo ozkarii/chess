@@ -1,6 +1,12 @@
-# Maybe have an instance of Game class for each game.
-# When a new game is started create new Game object.
-class Game():
+"""
+COMP.CS.100 
+Tekijä: Oskari Heinonen
+
+Chess game logic
+"""
+
+
+class Game:
     """This class handles the game logic (moves, captures, turns etc.)
     """
 
@@ -103,8 +109,11 @@ class Game():
 
     def move_piece(self, old_pos, new_pos):
         """Takes in the old and new positions of the piece to be moved
-        as a tuple: (row, column) and oves the piece in <self.__board>
+        as a tuple: (row, column) and moves the piece in <self.__board>
         accordingly.
+
+        :param old_pos: tuple, old position (row, column)
+        :param new_pos: tuple, new position (row, column)
         """
         
         piece = self.__board[old_pos[0]][old_pos[1]]

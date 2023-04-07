@@ -1,7 +1,6 @@
 """
 COMP.CS.100 
 Tekijä: Oskari Heinonen
-Opiskelijanumero: 151242115
 
 Chess gui
 """
@@ -14,6 +13,9 @@ from game import Game
 class Gui:
     """This class handles the gui for the chess game.
     """
+
+    # TODO: implement flipped board functionality
+
     def __init__(self):
         
         """Initializes the gui-object with an empty chessboard
@@ -21,12 +23,27 @@ class Gui:
         """
         
         self.__mainwindow = tk.Tk()
+        
+        # Dict for mapping piece names to corresponding PhotoImage-objects
         self.__piece_images = {}
+        
+        # Define image-object for empty image
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
+        
+        # Define the color to which the square clicked should turn into
         self.__new_color = "lightblue"
+        
         # Init an instance of the game class to handle the logic
         self.__game = Game()
+        
+        # Sets the starting position
         self.__game.set_position()
+        
+        # True: next click will be the first meaning that clicking selects
+        # the piece to be moved.
+        # False: A piece has been selected and the next click will be for
+        # moving that piece to the clicked square.
+        self.__first_click = True
         
         
         # Save the piece images into a dict
@@ -59,10 +76,12 @@ class Gui:
         # Adds commands to all buttons
         for row_count, row in enumerate(self.__squares):
             for column_count, square in enumerate(row):
-                square.config(command=lambda row=row_count, 
-                              column=column_count: [self.change_square_color(row, column),
-                              self.move_piece(row, column)]
-                              )
+                square.config(command=lambda row=row_count,
+                              column=column_count: 
+                              [self.move_piece(row, column),
+                               self.change_square_color(row, column),
+                               self.debug()
+                               ])
 
         # Menubar
         self.__menubar = tk.Menu(self.__mainwindow)
@@ -107,41 +126,55 @@ class Gui:
         :param row: int, row index of the square
         :param column: int, column index of the square
         """
-
-        current_color = self.__squares[row][column].cget("bg")
-        if current_color == "#f0e1c7" or current_color == "#a1784f":
-            # Find the current new_color square, if any
-            new_color_square = None
-            for i in range(0,8):
-                for j in range(0,8):
-                    if self.__squares[i][j].cget("bg") == self.__new_color:
-                        new_color_square = (i, j)
-                        break
-                if new_color_square:
-                    break
-
-            # If there's already a new_color square, change it to the original color
-            if new_color_square:
-                previous_row = new_color_square[0]
-                previous_column = new_color_square[1]
-                if previous_row % 2 == 0 and previous_column % 2 != 0:
-                    self.__squares[previous_row][previous_column].config(bg="#a1784f")
-                elif previous_row % 2 != 0 and previous_column % 2 == 0:
-                    self.__squares[previous_row][previous_column].config(bg="#a1784f")
-                else:
-                    self.__squares[previous_row][previous_column].config(bg="#f0e1c7")
-
-            # Set the clicked square to new_color
-            self.__squares[row][column].config(bg=self.__new_color)
         
-        # If the clicked square is in new_color, set it to the original color
+        if self.__squares[row][column] == None:
+            pass
+
+        # If first_click == True, all squares should be normal color
+        elif self.__first_click:
+            for x_count, x in enumerate(self.__squares):
+                for y_count, y in enumerate(x):
+                    if x_count % 2 == 0 and y_count % 2 != 0:
+                        y.config(bg="#a1784f")
+                    elif x_count % 2 != 0 and y_count % 2 == 0:
+                        y.config(bg="#a1784f")
+                    else:
+                        y.config(bg="#f0e1c7")
         else:
-            if row % 2 == 0 and column % 2 != 0:
-                self.__squares[row][column].config(bg="#a1784f")
-            elif row % 2 != 0 and column % 2 == 0:
-                self.__squares[row][column].config(bg="#a1784f")
+            current_color = self.__squares[row][column].cget("bg")
+            if current_color == "#f0e1c7" or current_color == "#a1784f":
+                # Find the current new_color square, if any
+                new_color_square = None
+                for i in range(0,8):
+                    for j in range(0,8):
+                        if self.__squares[i][j].cget("bg") == self.__new_color:
+                            new_color_square = (i, j)
+                            break
+                    if new_color_square:
+                        break
+
+                # If there's already a new_color square, change it to the original color
+                if new_color_square:
+                    previous_row = new_color_square[0]
+                    previous_column = new_color_square[1]
+                    if previous_row % 2 == 0 and previous_column % 2 != 0:
+                        self.__squares[previous_row][previous_column].config(bg="#a1784f")
+                    elif previous_row % 2 != 0 and previous_column % 2 == 0:
+                        self.__squares[previous_row][previous_column].config(bg="#a1784f")
+                    else:
+                        self.__squares[previous_row][previous_column].config(bg="#f0e1c7")
+
+                # Set the clicked square to new_color
+                self.__squares[row][column].config(bg=self.__new_color)
+
+            # If the clicked square is in new_color, set it to the original color
             else:
-                self.__squares[row][column].config(bg="#f0e1c7")
+                if row % 2 == 0 and column % 2 != 0:
+                    self.__squares[row][column].config(bg="#a1784f")
+                elif row % 2 != 0 and column % 2 == 0:
+                    self.__squares[row][column].config(bg="#a1784f")
+                else:
+                    self.__squares[row][column].config(bg="#f0e1c7")
 
 
     def load_position_popup(self):
@@ -200,32 +233,37 @@ class Gui:
                         )
     
 
-
     def move_piece(self, row, column):
         """
         """
+        if self.__game.get_board()[row][column] == None and self.__first_click:
+            pass
+        elif self.__first_click:
+            self.__old_position = (row, column)
+            self.__first_click = False
+        elif not self.__first_click:
+            self.__new_position = (row, column)
+            self.__game.move_piece(self.__old_position, self.__new_position)
+            self.load_position(self.__game.get_board())
+            self.__first_click = True
 
-        try:
-            print(self.__selected_square_1)
-            if self.__selected_square_1 != None:
-                self.__game.get_board()[row][column] = None
-                self.__selected_square_2 = self.__selected_square_1
-                self.__selected_square_1 = None
-            
-            elif self.__selected_square_1 == None:
-                self.__game.get_board()[row][column] = self.__selected_square_2
+
+
+    # def move_piece(self, old_pos, new_pos = (None,None)):
+    #     """
+    #     """
+    #     if self.__first_click:
+    #         self.__old_position = old_pos
+    #         self.__first_click = False
         
-        except AttributeError:
-            print("lol")
-            self.__selected_square_1 = self.__game.get_board()[row][column]
-
-        self.load_position(self.__game.get_board())
-
+    #     elif not self.__first_click:
+    #         self.__game.move_piece(old_pos, new_pos)
+    #         self.__first_click = True
             
 
 
     def mainloop(self):
-        """
+        """Executes mainloop for <self.__mainwindow>.
         """
         self.__mainwindow.mainloop()
 
@@ -237,13 +275,15 @@ class Gui:
         
         # self.__game.move_piece((1,0), (2,0))
         # self.load_position(self.__game.get_board())
-        self.__game.print_board()
+        # self.load_position(self.__game.get_board())
+        # self.__game.print_board()
+        # current_board = self.__game.get_board()
+        # print(self.__game.list_to_fen())
 
 
 
 def main():
     gui = Gui()
-    # gui.debug()  
     gui.mainloop()
     
 
