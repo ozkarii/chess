@@ -381,7 +381,7 @@ class Gui:
             if self.__game.move_piece(self.__old_position, self.__new_position):
                 self.load_position(self.__current_board)
                 if self.__old_position != self.__new_position:
-                    winsound.Beep(550,30)
+                    winsound.Beep(500,50)
                 self.__first_click = True
             else:
                 self.__first_click = True

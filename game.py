@@ -109,9 +109,84 @@ class Game:
     
 
     def move_is_legal(self, old_pos, new_pos):
+        """Returns True/False depending on the move's legitimity.
         """
-        """
-        return True
+        print(old_pos, new_pos)
+        # #TODO: needs variable for old board
+        # For quicker access:
+        old_x = old_pos[1]
+        old_y = old_pos[0]
+        new_x = new_pos[1]
+        new_y = new_pos[0]
+
+        old_board = self.__board
+        old_square = old_board[old_y][old_x]
+        
+        # False if same square
+        if old_pos == new_pos:
+            return False
+        
+        # White pawn
+        elif old_square == "P":
+            if new_y - old_y == -1 and new_x == old_x:
+                if old_board[new_y][new_x] == None:
+                    return True
+                else:
+                    return False
+            elif new_y - old_y == -1 and abs(new_x - old_x) == 1:
+                if old_board[new_y][new_x] != None:
+                    return True
+                else:
+                    return False
+            elif old_y == 6 and new_y - old_y == -2 and new_x == old_x and \
+                 old_board[old_y + - 1][old_x] == None:
+                if old_board[new_y][new_x] == None:
+                    return True
+                else:
+                    return False
+
+            
+        # Black pawn
+        elif old_square == "p":
+            if new_y - old_y == 1 and new_x == old_x:
+                if old_board[new_y][new_x] == None:
+                    return True
+                else:
+                    return False
+            elif new_y - old_y == 1 and abs(new_x - old_x) == 1:
+                if old_board[new_y][new_x] != None:
+                    return True
+                else:
+                    return False
+            elif old_y == 1 and new_y - old_y == 2 and new_x == old_x and \
+                 old_board[old_y + 1][old_x] == None:
+                if old_board[new_y][new_x] == None:
+                    return True
+                else:
+                    return False
+                
+        # Rook
+        elif old_square in ("r", "R"):
+            if new_x == old_x or new_y == old_y:
+                if new_y == old_y:
+                    if new_x > old_x:
+                        for i in range(old_x + 1, new_x):
+                            if old_board[old_y][i] != None:
+                                print(i)
+                                return False
+                        return True
+                    
+                    elif new_x < old_x:
+                        for i in range(new_x, old_x - 1):
+                            if old_board[old_y][i] != None:
+                                print(i)
+                                return False
+                        return True
+            else:
+                return False
+        
+        # Bishop
+        
 
 
     def move_piece(self, old_pos, new_pos):
@@ -144,3 +219,13 @@ class Game:
                 else:
                     print("{:<8}".format(str(piece)), end=" ")
                     count += 1
+
+from gui import *
+
+def main():
+    gui = Gui()
+    gui.mainloop()
+    
+
+if __name__ == '__main__':
+    main()
