@@ -6,11 +6,13 @@ Chess gui
 """
 
 import tkinter as tk
+from tkinter import ttk, colorchooser
 import os
 from game import Game
-from tkinter import colorchooser
+import winsound
 
 
+# TODO: lightsquare doesn't change on the first try
 
 class Gui:
     """This class handles the gui for the chess game.
@@ -25,21 +27,19 @@ class Gui:
         """
         
         self.__mainwindow = tk.Tk()
-        
+        self.__mainwindow.geometry("+600+100")
+        self.__mainwindow.title("Chess")
+        logo = tk.PhotoImage(file="pictures/logo.png")
+        self.__mainwindow.iconphoto(True, logo)
+
         # Dict for mapping piece names to corresponding PhotoImage-objects
         self.__piece_images = {}
         
         # Define image-object for empty image
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
         
-        # Define the color to which the square clicked should turn into
-        self.__highlight_color = "lightblue"
-
-        #
-        self.__light_square_color = "#f0e1c7"
-
-        #
-        self.__dark_square_color = "#a1784f"
+        # load style from file
+        self.style_from_file("config/style.txt")
         
         # Init an instance of the game class to handle the logic
         self.__game = Game()
@@ -97,12 +97,13 @@ class Gui:
                                ])
 
         # Menubar
-        self.__menubar = tk.Menu(self.__mainwindow)
+        self.__menubar = tk.Menu(self.__mainwindow, tearoff=0)
 
         # Game menu
-        self.__game_menu = tk.Menu(self.__menubar)
+        self.__game_menu = tk.Menu(self.__menubar, tearoff=0)
         self.__game_menu.add_command(label="Load position", 
                                      command=self.load_position_popup)
+        # TODO: remove highlight when resetting
         self.__game_menu.add_command(label="Reset position",
                                      command=lambda: [self.__game.set_position(),
                                      self.load_position(self.__current_board),
@@ -110,7 +111,7 @@ class Gui:
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
-        self.__settings_menu = tk.Menu(self.__menubar)
+        self.__settings_menu = tk.Menu(self.__menubar, tearoff=0)
         self.__settings_menu.add_command(label="Game")
         self.__settings_menu.add_command(label="Style",
                                          command= lambda: [self.style_popup()])
@@ -201,14 +202,41 @@ class Gui:
                         bg=self.__light_square_color)
 
 
+    def style_from_file(self, path):
+        """Assigns style settings to attributes from a file.
+
+        :param path: str, path to style file
+        """
+        style_file = open("config/style.txt", "r")
+        lines = style_file.readlines()
+        style_dict = {}
+        for line in lines:
+            style_dict[line.split(";")[0]] = \
+            line.split(";")[1].replace("\n","")
+        style_file.close()
+
+        try:
+            self.__light_square_color = style_dict["lightsquare"]
+            self.__dark_square_color = style_dict["darksquare"]
+            self.__highlight_color = style_dict["highlight"]
+        except KeyError:
+            self.__light_square_color = "#f0e1c7"
+            self.__dark_square_color = "#a1784f"
+            self.__highlight_color = "red"
+
+    #TODO: add write to file
+
     def load_position_popup(self):
         """Opens a popup window for loading a position.
         """
         # TODO: Needs error handling for when the FEN string is invalid.
 
         popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
         popup.title("Load position")
-        popup.geometry("500x150")
+        main_x = self.__mainwindow.winfo_rootx()
+        main_y = self.__mainwindow.winfo_rooty()
+        popup.geometry(f"500x150+{main_x + 20}+{main_y + 20}")
         usr_input = tk.StringVar(popup)
         entry = tk.Entry(popup,textvariable=usr_input, width=65)
         entry.grid(padx=50, pady=50, row=0, column=0)
@@ -219,15 +247,15 @@ class Gui:
                       command=lambda: [
                             self.__game.set_position(entry.get()),
                             self.load_position(self.__current_board),
-                            self.debug()
-                            ])
+                            self.debug()])
         load_button.grid(row=1, column=0)
+
 
     def style_popup(self):
         """Opens a popup window for the style settings.
         """
         def set_color(target):
-            """
+            """Sets the square colors based on current square_color attributes
             """
             if target == "highlight":
                 self.__highlight_color = colorchooser.askcolor()[1]
@@ -237,11 +265,14 @@ class Gui:
                 for x in range(0,8):
                     for y in range(0,8):
                         if x % 2 == 0 and y % 2 != 0:
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__dark_square_color)
                         elif x % 2 != 0 and y % 2 == 0:
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__dark_square_color)
                         else:
-                            self.__squares[x][y].config(bg=self.__light_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__light_square_color)
             
             elif target == "darksquare":
                 self.__dark_square_color = colorchooser.askcolor()[1]
@@ -267,28 +298,39 @@ class Gui:
 
 
         popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
         popup.title("Style settings")
-        popup.geometry("500x200")
+        main_x = self.__mainwindow.winfo_rootx()
+        main_y = self.__mainwindow.winfo_rooty()
+        popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
+
         
         pick_highlight_color = tk.Button(popup, text="Highlight color...")
         pick_highlight_color.config(command= lambda: set_color("highlight"))
-        pick_highlight_color.grid(row=0, column=1)
+        pick_highlight_color.grid(row=0, column=1, padx=10, pady=5)
 
         pick_light_sqr_color = tk.Button(popup, text="Light square color...")
         pick_light_sqr_color.config(command= lambda: set_color("lightsquare"))
-        pick_light_sqr_color.grid(row=1, column=1)
-
+        pick_light_sqr_color.grid(row=1, column=1, padx=10, pady=5)
 
         pick_dark_sqr_color = tk.Button(popup, text="Dark square color...")
         pick_dark_sqr_color.config(command= lambda: set_color("darksquare"))
-        pick_dark_sqr_color.grid(row=2, column=1)
+        pick_dark_sqr_color.grid(row=2, column=1, padx=10, pady=5)
 
         reset_colors = tk.Button(popup, text="Reset colors")
         reset_colors.config(command= lambda: set_color("reset"))
-        reset_colors.grid(row=3, column=1)
+        reset_colors.grid(row=3, column=1, padx=10, pady=5)
 
-        
-        
+        piece_style_menu = ttk.Combobox(popup, state="readonly")
+        piece_style_menu["values"] = ("Cburnett", "none")
+        piece_style_menu["state"] = 'readonly'
+        piece_style_menu.current(0)
+        piece_style_menu.grid(row=1, column=0, padx=10)
+
+        piece_style_label = tk.Label(popup, text="Piece style", 
+                                     font=("Arial", 10))
+        piece_style_label.grid(row=0, column=0)
+
 
     def load_position(self, board):
         """Sets the pieces to the correct places given by 
@@ -338,9 +380,12 @@ class Gui:
             # move the pieces
             if self.__game.move_piece(self.__old_position, self.__new_position):
                 self.load_position(self.__current_board)
+                if self.__old_position != self.__new_position:
+                    winsound.Beep(550,30)
                 self.__first_click = True
             else:
                 self.__first_click = True
+            
 
 
     def mainloop(self):
