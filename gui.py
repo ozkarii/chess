@@ -8,6 +8,7 @@ Chess gui
 import tkinter as tk
 import os
 from game import Game
+from tkinter import colorchooser
 
 
 
@@ -32,7 +33,13 @@ class Gui:
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
         
         # Define the color to which the square clicked should turn into
-        self.__new_color = "lightblue"
+        self.__highlight_color = "lightblue"
+
+        #
+        self.__light_square_color = "#f0e1c7"
+
+        #
+        self.__dark_square_color = "#a1784f"
         
         # Init an instance of the game class to handle the logic
         self.__game = Game()
@@ -40,6 +47,11 @@ class Gui:
         # Sets the starting position
         self.__game.set_position()
         
+        # Current board assigned to a variable
+        self.__current_board = self.__game.get_board()
+
+
+
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
         # False: A piece has been selected and the next click will be for
@@ -64,13 +76,13 @@ class Gui:
             for y in range(1,9):
                 self.__square = tk.Button(
                     self.__mainwindow, width=10, height=5, 
-                    borderwidth=0, bg="#f0e1c7",
+                    borderwidth=0, bg=self.__light_square_color,
                     )
                 self.__square.grid(row=x, column=y)
                 if x % 2 == 0 and y % 2 != 0:
-                    self.__square.config(bg="#a1784f")
+                    self.__square.config(bg=self.__dark_square_color)
                 elif x % 2 != 0 and y % 2 == 0:
-                    self.__square.config(bg="#a1784f")
+                    self.__square.config(bg=self.__dark_square_color)
                 self.__row.append(self.__square)
             self.__squares.append(self.__row)
 
@@ -91,13 +103,17 @@ class Gui:
         self.__game_menu = tk.Menu(self.__menubar)
         self.__game_menu.add_command(label="Load position", 
                                      command=self.load_position_popup)
-        self.__game_menu.add_command(label="Reset position")
+        self.__game_menu.add_command(label="Reset position",
+                                     command=lambda: [self.__game.set_position(),
+                                     self.load_position(self.__current_board),
+                                     ])
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
         self.__settings_menu = tk.Menu(self.__menubar)
         self.__settings_menu.add_command(label="Game")
-        self.__settings_menu.add_command(label="Style")
+        self.__settings_menu.add_command(label="Style",
+                                         command= lambda: [self.style_popup()])
         self.__settings_menu.add_command(label="Network")
         self.__menubar.add_cascade(menu=self.__settings_menu, label="Settings")
 
@@ -118,7 +134,7 @@ class Gui:
             x_label.grid(column=x, row=9)
 
         # Load start position
-        self.load_position(self.__game.get_board())
+        self.load_position(self.__current_board)
 
 
     def change_square_color(self, row, column):
@@ -136,19 +152,20 @@ class Gui:
             for x_count, x in enumerate(self.__squares):
                 for y_count, y in enumerate(x):
                     if x_count % 2 == 0 and y_count % 2 != 0:
-                        y.config(bg="#a1784f")
+                        y.config(bg=self.__dark_square_color)
                     elif x_count % 2 != 0 and y_count % 2 == 0:
-                        y.config(bg="#a1784f")
+                        y.config(bg=self.__dark_square_color)
                     else:
-                        y.config(bg="#f0e1c7")
+                        y.config(bg=self.__light_square_color)
         else:
             current_color = self.__squares[row][column].cget("bg")
-            if current_color == "#f0e1c7" or current_color == "#a1784f":
+            if current_color == self.__light_square_color or \
+               current_color == self.__dark_square_color:
                 # Find the current new_color square, if any
                 new_color_square = None
                 for i in range(0,8):
                     for j in range(0,8):
-                        if self.__squares[i][j].cget("bg") == self.__new_color:
+                        if self.__squares[i][j].cget("bg") == self.__highlight_color:
                             new_color_square = (i, j)
                             break
                     if new_color_square:
@@ -159,23 +176,29 @@ class Gui:
                     previous_row = new_color_square[0]
                     previous_column = new_color_square[1]
                     if previous_row % 2 == 0 and previous_column % 2 != 0:
-                        self.__squares[previous_row][previous_column].config(bg="#a1784f")
+                        self.__squares[previous_row][previous_column].config(
+                            bg=self.__dark_square_color)
                     elif previous_row % 2 != 0 and previous_column % 2 == 0:
-                        self.__squares[previous_row][previous_column].config(bg="#a1784f")
+                        self.__squares[previous_row][previous_column].config(
+                            bg=self.__dark_square_color)
                     else:
-                        self.__squares[previous_row][previous_column].config(bg="#f0e1c7")
+                        self.__squares[previous_row][previous_column].config(
+                            bg=self.__light_square_color)
 
                 # Set the clicked square to new_color
-                self.__squares[row][column].config(bg=self.__new_color)
+                self.__squares[row][column].config(bg=self.__highlight_color)
 
             # If the clicked square is in new_color, set it to the original color
             else:
                 if row % 2 == 0 and column % 2 != 0:
-                    self.__squares[row][column].config(bg="#a1784f")
+                    self.__squares[row][column].config(
+                        bg=self.__dark_square_color)
                 elif row % 2 != 0 and column % 2 == 0:
-                    self.__squares[row][column].config(bg="#a1784f")
+                    self.__squares[row][column].config(
+                        bg=self.__dark_square_color)
                 else:
-                    self.__squares[row][column].config(bg="#f0e1c7")
+                    self.__squares[row][column].config(
+                        bg=self.__light_square_color)
 
 
     def load_position_popup(self):
@@ -195,10 +218,77 @@ class Gui:
                       popup, text="Load", 
                       command=lambda: [
                             self.__game.set_position(entry.get()),
-                            self.load_position(self.__game.get_board())]
-                      )
+                            self.load_position(self.__current_board),
+                            self.debug()
+                            ])
         load_button.grid(row=1, column=0)
 
+    def style_popup(self):
+        """Opens a popup window for the style settings.
+        """
+        def set_color(target):
+            """
+            """
+            if target == "highlight":
+                self.__highlight_color = colorchooser.askcolor()[1]
+
+            elif target == "lightsquare":
+                self.__light_square_color = colorchooser.askcolor()[1]    
+                for x in range(0,8):
+                    for y in range(0,8):
+                        if x % 2 == 0 and y % 2 != 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                        elif x % 2 != 0 and y % 2 == 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                        else:
+                            self.__squares[x][y].config(bg=self.__light_square_color)
+            
+            elif target == "darksquare":
+                self.__dark_square_color = colorchooser.askcolor()[1]
+                for x in range(0,8):
+                    for y in range(0,8):
+                        if x % 2 == 0 and y % 2 != 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                        elif x % 2 != 0 and y % 2 == 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+            
+            elif target == "reset":
+                self.__light_square_color = "#f0e1c7"
+                self.__dark_square_color = "#a1784f"
+                self.__highlight_color = "lightblue"
+                for x in range(0,8):
+                    for y in range(0,8):
+                        if x % 2 == 0 and y % 2 != 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                        elif x % 2 != 0 and y % 2 == 0:
+                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                        else:
+                            self.__squares[x][y].config(bg=self.__light_square_color)
+
+
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.title("Style settings")
+        popup.geometry("500x200")
+        
+        pick_highlight_color = tk.Button(popup, text="Highlight color...")
+        pick_highlight_color.config(command= lambda: set_color("highlight"))
+        pick_highlight_color.grid(row=0, column=1)
+
+        pick_light_sqr_color = tk.Button(popup, text="Light square color...")
+        pick_light_sqr_color.config(command= lambda: set_color("lightsquare"))
+        pick_light_sqr_color.grid(row=1, column=1)
+
+
+        pick_dark_sqr_color = tk.Button(popup, text="Dark square color...")
+        pick_dark_sqr_color.config(command= lambda: set_color("darksquare"))
+        pick_dark_sqr_color.grid(row=2, column=1)
+
+        reset_colors = tk.Button(popup, text="Reset colors")
+        reset_colors.config(command= lambda: set_color("reset"))
+        reset_colors.grid(row=3, column=1)
+
+        
+        
 
     def load_position(self, board):
         """Sets the pieces to the correct places given by 
@@ -237,16 +327,20 @@ class Gui:
     def move_piece(self, row, column):
         """
         """
-        if self.__game.get_board()[row][column] == None and self.__first_click:
+        if self.__current_board[row][column] == None and self.__first_click:
             pass
         elif self.__first_click:
             self.__old_position = (row, column)
             self.__first_click = False
-        elif not self.__first_click:
+        else:
             self.__new_position = (row, column)
-            self.__game.move_piece(self.__old_position, self.__new_position)
-            self.load_position(self.__game.get_board())
-            self.__first_click = True
+            # If move_piece-funcion returns True ie. the move is legal,
+            # move the pieces
+            if self.__game.move_piece(self.__old_position, self.__new_position):
+                self.load_position(self.__current_board)
+                self.__first_click = True
+            else:
+                self.__first_click = True
 
 
     def mainloop(self):
@@ -259,7 +353,7 @@ class Gui:
         """This method is used for debugging by executing 
         it from the main function.
         """
-        
+        # print(self.__current_board)
         
 def main():
     gui = Gui()

@@ -76,7 +76,7 @@ class Game:
                 print("invalid")
 
 
-    def list_to_fen(self):
+    def list_to_fen(self, board):
         """Coverts the position information in <self.__board> 
         into a FEN-string.
         :param board: list, data structure for holding positional information
@@ -86,7 +86,7 @@ class Game:
         empty_square_count = 0
         column_count = 0
         row_count = 0
-        for row in self.__board:
+        for row in board:
             for square in row:
                 if column_count == 7:
                     output_fen += str(empty_square_count + 1)
@@ -108,6 +108,12 @@ class Game:
         return output_fen
     
 
+    def move_is_legal(self, old_pos, new_pos):
+        """
+        """
+        return True
+
+
     def move_piece(self, old_pos, new_pos):
         """Takes in the old and new positions of the piece to be moved
         as a tuple: (row, column) and moves the piece in <self.__board>
@@ -117,9 +123,13 @@ class Game:
         :param new_pos: tuple, new position (row, column)
         """
         
-        piece = self.__board[old_pos[0]][old_pos[1]]
-        self.__board[old_pos[0]][old_pos[1]] = None
-        self.__board[new_pos[0]][new_pos[1]] = piece
+        if self.move_is_legal(old_pos, new_pos):
+            piece = self.__board[old_pos[0]][old_pos[1]]
+            self.__board[old_pos[0]][old_pos[1]] = None
+            self.__board[new_pos[0]][new_pos[1]] = piece
+            return True
+        else:
+            return False
 
 
     def print_board(self):
