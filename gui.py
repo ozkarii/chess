@@ -68,9 +68,9 @@ class Gui:
         # PhotoImage -object needs to be assigned to a variable
         # because of garbage collection.
         # The keys in self.__piece_images are named color_category
-        for i in os.listdir("pieces/Cburnett"):
+        for i in os.listdir("pictures/pieces/Cburnett"):
             self.__piece_images[i.replace(".png","")] = \
-            tk.PhotoImage(file=f"pieces/Cburnett/{i}")
+            tk.PhotoImage(file=f"pictures/pieces/Cburnett/{i}")
         
         
         # Squares
