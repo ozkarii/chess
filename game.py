@@ -289,6 +289,22 @@ class Game:
                 else:
                     return False
 
+        # King
+        elif old_square in ("k", "K"):
+            if abs(old_x - new_x) <= 1 and abs(old_y - new_y) <= 1:
+                return True
+            else:
+                return False
+
+        # Knight
+        elif old_square in ("n", "N"):
+            if abs(old_x - new_x) == 2 and abs(old_y - new_y) == 1:
+                return True
+            elif abs(old_y - new_y) == 2 and abs(old_x - new_x) == 1:
+                return True
+            else:
+                return False
+
 
     def move_piece(self, old_pos, new_pos):
         """Takes in the old and new positions of the piece to be moved
