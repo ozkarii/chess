@@ -13,12 +13,16 @@ import winsound
 
 
 # TODO: lightsquare doesn't change on the first try
+# TODO: implement flipped board functionality
+# TODO: x and y are mixed up when referencing board
+# TODO: use slef.__game.is_square_dark for checking square color
+# TODO: make window sizes fixed
 
 class Gui:
     """This class handles the gui for the chess game.
     """
 
-    # TODO: implement flipped board functionality
+    
 
     def __init__(self):
         
@@ -112,9 +116,9 @@ class Gui:
         
         # Settings menu
         self.__settings_menu = tk.Menu(self.__menubar, tearoff=0)
-        self.__settings_menu.add_command(label="Game")
+        self.__settings_menu.add_command(label="Game", command=self.game_popup)
         self.__settings_menu.add_command(label="Style",
-                                         command= lambda: [self.style_popup()])
+                                         command=self.style_popup)
         self.__settings_menu.add_command(label="Network")
         self.__menubar.add_cascade(menu=self.__settings_menu, label="Settings")
 
@@ -207,7 +211,7 @@ class Gui:
 
         :param path: str, path to style file
         """
-        style_file = open("config/style.txt", "r")
+        style_file = open(path, "r")
         lines = style_file.readlines()
         style_dict = {}
         for line in lines:
@@ -219,17 +223,33 @@ class Gui:
             self.__light_square_color = style_dict["lightsquare"]
             self.__dark_square_color = style_dict["darksquare"]
             self.__highlight_color = style_dict["highlight"]
+
         except KeyError:
             self.__light_square_color = "#f0e1c7"
             self.__dark_square_color = "#a1784f"
             self.__highlight_color = "red"
 
-    #TODO: add write to file
+
+
+    def style_to_file(self, path):
+        """
+        """
+        style_file = open(path, "r")
+        lines = style_file.readlines()
+        style_file.close()
+        lines[0] = f"lightsquare;{self.__light_square_color}\n"
+        lines[1] = f"darksquare;{self.__dark_square_color}\n"
+        lines[2] = f"highlight;{self.__highlight_color}\n"
+
+        with open(path, "w") as style_file:
+            for line in lines:
+                style_file.write(line)
+        style_file.close()
+
 
     def load_position_popup(self):
         """Opens a popup window for loading a position.
         """
-        # TODO: Needs error handling for when the FEN string is invalid.
 
         popup = tk.Toplevel(self.__mainwindow)
         popup.grab_set()
@@ -246,8 +266,7 @@ class Gui:
                       popup, text="Load", 
                       command=lambda: [
                             self.__game.set_position(entry.get()),
-                            self.load_position(self.__current_board),
-                            self.debug()])
+                            self.load_position(self.__current_board)])
         load_button.grid(row=1, column=0)
 
 
@@ -286,7 +305,7 @@ class Gui:
             elif target == "reset":
                 self.__light_square_color = "#f0e1c7"
                 self.__dark_square_color = "#a1784f"
-                self.__highlight_color = "lightblue"
+                self.__highlight_color = "red   "
                 for x in range(0,8):
                     for y in range(0,8):
                         if x % 2 == 0 and y % 2 != 0:
@@ -322,7 +341,7 @@ class Gui:
         reset_colors.grid(row=3, column=1, padx=10, pady=5)
 
         piece_style_menu = ttk.Combobox(popup, state="readonly")
-        piece_style_menu["values"] = ("Cburnett", "none")
+        piece_style_menu["values"] = ("Cburnett", "Small")
         piece_style_menu["state"] = 'readonly'
         piece_style_menu.current(0)
         piece_style_menu.grid(row=1, column=0, padx=10)
@@ -330,6 +349,30 @@ class Gui:
         piece_style_label = tk.Label(popup, text="Piece style", 
                                      font=("Arial", 10))
         piece_style_label.grid(row=0, column=0)
+
+        save_changes = tk.Button(popup, text="Save changes", height=1,
+                                 command= lambda: 
+                                 self.style_to_file("config/style.txt"))
+        save_changes.grid(row=3, column=0)
+
+
+    def game_popup(self):
+        """Loads a popup window for game settings.
+        """
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
+        popup.title("Game settings")
+        main_x = self.__mainwindow.winfo_rootx()
+        main_y = self.__mainwindow.winfo_rooty()
+        popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
+
+
+        gamemode_1 = tk.Radiobutton(popup, text="Normal", value="normal")
+        gamemode_2 = tk.Radiobutton(popup, text="Pawns only", value="pawns")
+
+        gamemode_1.pack()
+        gamemode_2.pack()
+
 
 
     def load_position(self, board):
@@ -387,7 +430,6 @@ class Gui:
                 self.__first_click = True
             
 
-
     def mainloop(self):
         """Executes mainloop for <self.__mainwindow>.
         """
@@ -398,8 +440,8 @@ class Gui:
         """This method is used for debugging by executing 
         it from the main function.
         """
-        # print(self.__current_board)
-        
+
+
 def main():
     gui = Gui()
     gui.mainloop()
