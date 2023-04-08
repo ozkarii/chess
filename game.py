@@ -111,8 +111,7 @@ class Game:
     def move_is_legal(self, old_pos, new_pos):
         """Returns True/False depending on the move's legitimity.
         """
-        print(old_pos, new_pos)
-        # #TODO: needs variable for old board
+
         # For quicker access:
         old_x = old_pos[1]
         old_y = old_pos[0]
@@ -122,6 +121,57 @@ class Game:
         old_board = self.__board
         old_square = old_board[old_y][old_x]
         
+        transposed_board = self.transpose(old_board)
+        
+        def check_diagonal():
+            """Checks if there are other pieces on the diagonal from
+            old to new position.
+            """
+            # TODO: add functionality to check if the square actually
+            # is on the diagonal
+            if new_y < old_y and new_x < old_x:
+                return True
+            elif new_y < old_y and new_x > old_x:
+                return True
+            elif new_y > old_y and new_x < old_x:
+                return True
+            elif new_y > old_y and new_x > old_x:
+                return True
+            
+
+        def check_straight():
+            """Checks if there are other pieces on the way going straight from
+            old to new position.
+
+            :return: bool, True if no pieces; False if pieces
+            """
+            #MAYBE don't check if new == old
+            if new_y == old_y:
+                if new_x > old_x:
+                    for i in range(old_x + 1, new_x):
+                        if old_board[old_y][i] != None:
+                            return False
+                    return True
+                elif new_x < old_x:
+                    for i in range(new_x + 1, old_x):
+                        if old_board[old_y][i] != None:
+                            return False
+                    return True
+
+            # This uses basically the same code as when new_y == old_y
+            # except with a transposed board
+            elif new_x == old_x:
+                if new_y > old_y:
+                    for i in range(old_y + 1, new_y):
+                        if transposed_board[old_x][i] != None:
+                            return False
+                    return True
+                elif new_y < old_y:
+                    for i in range(new_y + 1, old_y):
+                        if transposed_board[old_x][i] != None:
+                            return False
+                    return True
+
         # False if same square
         if old_pos == new_pos:
             return False
@@ -145,7 +195,6 @@ class Game:
                 else:
                     return False
 
-            
         # Black pawn
         elif old_square == "p":
             if new_y - old_y == 1 and new_x == old_x:
@@ -167,26 +216,47 @@ class Game:
                 
         # Rook
         elif old_square in ("r", "R"):
-            if new_x == old_x or new_y == old_y:
-                if new_y == old_y:
-                    if new_x > old_x:
-                        for i in range(old_x + 1, new_x):
-                            if old_board[old_y][i] != None:
-                                print(i)
-                                return False
-                        return True
-                    
-                    elif new_x < old_x:
-                        for i in range(new_x, old_x - 1):
-                            if old_board[old_y][i] != None:
-                                print(i)
-                                return False
-                        return True
+            if check_straight():
+                return True
             else:
                 return False
-        
+
         # Bishop
-        
+        #TODO: fix: bishop can move to almost any dark square
+        elif old_square in ("b", "B"):
+            if self.square_is_dark(old_y, old_x):
+                if self.square_is_dark(new_y, new_x):
+                    if check_diagonal():
+                        return True
+                    else:
+                        return False
+            else:
+                if not self.square_is_dark(new_y, new_x):
+                    if check_diagonal():
+                        return True
+                    else:
+                        return False
+                    
+        # Queen
+        elif old_square in ("q", "Q"):
+            if old_x == new_x or old_y == new_y:
+                if check_straight():
+                    return True
+                else:
+                    return False
+            elif self.square_is_dark(old_y, old_x) and \
+                 self.square_is_dark(new_y, new_x):
+                if check_diagonal():
+                    return True
+                else:
+                    return False
+            
+            elif not self.square_is_dark(old_y, old_x) and \
+                 not self.square_is_dark(new_y, new_x):
+                if check_diagonal():
+                    return True
+                else:
+                    return False
 
 
     def move_piece(self, old_pos, new_pos):
@@ -206,6 +276,29 @@ class Game:
         else:
             return False
 
+
+    def square_is_dark(self, row, column):
+        """
+        """
+        if row % 2 == 0 and column % 2 != 0:
+            return True
+        elif row % 2 != 0 and column % 2 == 0:
+            return True
+        else:
+            return False
+
+    def transpose(self, matrix):
+        """Returns the transpose of a matrix-like list data structure
+        such as self.__board.
+        """
+        num_rows = len(matrix)
+        num_cols = len(matrix[0])
+        transposed_board = [[None] * num_rows for _ in range(num_cols)]
+        for i in range(num_rows):
+            for j in range(num_cols):
+                transposed_board[j][i] = matrix[i][j]
+        
+        return transposed_board
 
     def print_board(self):
         """for debug purposes
