@@ -5,6 +5,8 @@ Tekijä: Oskari Heinonen
 Chess game logic
 """
 
+# TODO: checking for check could be implemented by checking if capturing
+# the king is a legal move
 
 class Game:
     """This class handles the game logic (moves, captures, turns etc.)
@@ -123,19 +125,48 @@ class Game:
         
         transposed_board = self.transpose(old_board)
         
+
         def check_diagonal():
-            """Checks if there are other pieces on the diagonal from
+            """Checks if the new square is in the correct diagonal. 
+            Also checks if there are other pieces on the diagonal from
             old to new position.
+
+            :return: bool, True if diagonal is valid and False if not
             """
-            # TODO: add functionality to check if the square actually
-            # is on the diagonal
+
             if new_y < old_y and new_x < old_x:
+                print("x")
+                for i in range(1,8):
+                    if (old_x - i, old_y - i) == (new_x, new_y):
+                        for j in range(1, old_x - new_x):
+                            if old_board[old_y - j][old_x - j] != None:
+                                return False
                 return True
+            
             elif new_y < old_y and new_x > old_x:
+                print("y")
+                for i in range(1,8):
+                    if (old_x + i, old_y - i) == (new_x, new_y):
+                        for j in range(1, new_x - old_x):
+                            if old_board[old_y - j][old_x + j] != None:
+                                return False
                 return True
+            
             elif new_y > old_y and new_x < old_x:
+                print("z")
+                for i in range(1,8):
+                    if (old_x - i, old_y + i) == (new_x, new_y):
+                        for j in range(1, old_x - new_x):
+                            if old_board[old_y + j][old_x - j] != None:
+                                return False
                 return True
+            
             elif new_y > old_y and new_x > old_x:
+                for i in range(1,8):
+                    if (old_x + i, old_y + i) == (new_x, new_y):
+                        for j in range(1, new_x - old_x):
+                            if old_board[old_y + j][old_x + j] != None:
+                                return False
                 return True
             
 
@@ -171,6 +202,7 @@ class Game:
                         if transposed_board[old_x][i] != None:
                             return False
                     return True
+
 
         # False if same square
         if old_pos == new_pos:
@@ -222,7 +254,6 @@ class Game:
                 return False
 
         # Bishop
-        #TODO: fix: bishop can move to almost any dark square
         elif old_square in ("b", "B"):
             if self.square_is_dark(old_y, old_x):
                 if self.square_is_dark(new_y, new_x):
@@ -278,8 +309,12 @@ class Game:
 
 
     def square_is_dark(self, row, column):
+        """Returns True if the given square is dark.
+        
+        :param row: int, square's row
+        :param column: int, square's column
         """
-        """
+
         if row % 2 == 0 and column % 2 != 0:
             return True
         elif row % 2 != 0 and column % 2 == 0:
@@ -287,10 +322,15 @@ class Game:
         else:
             return False
 
+
     def transpose(self, matrix):
         """Returns the transpose of a matrix-like list data structure
         such as self.__board.
+
+        :param matrix: list, matrix-like list[list[]] data-structure
+        :return: list, input matrix's transpose
         """
+
         num_rows = len(matrix)
         num_cols = len(matrix[0])
         transposed_board = [[None] * num_rows for _ in range(num_cols)]
@@ -299,6 +339,7 @@ class Game:
                 transposed_board[j][i] = matrix[i][j]
         
         return transposed_board
+
 
     def print_board(self):
         """for debug purposes
