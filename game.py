@@ -7,6 +7,8 @@ Chess game logic
 
 # TODO: checking for check could be implemented by checking if capturing
 # the king is a legal move
+# TODO: make capturing own pieces illegal
+# TODO: moving one square diagonally is not allowed for bishop and queen
 
 class Game:
     """This class handles the game logic (moves, captures, turns etc.)
@@ -35,6 +37,8 @@ class Game:
 
     def get_board(self):
         """Returns the current board
+        
+        :return: list, board data structure
         """
         return self.__board
     
@@ -84,6 +88,7 @@ class Game:
         :param board: list, data structure for holding positional information
         :return: str, position as FEN-string
         """
+        
         output_fen = ""
         empty_square_count = 0
         column_count = 0
@@ -112,17 +117,22 @@ class Game:
 
     def move_is_legal(self, old_pos, new_pos):
         """Returns True/False depending on the move's legitimity.
+        
+        :param old_pos: tuple, (row, column)
+        :param new_pos: tuple, (row, column)
         """
 
         # For quicker access:
-        old_x = old_pos[1]
-        old_y = old_pos[0]
-        new_x = new_pos[1]
-        new_y = new_pos[0]
+        old_y, old_x = old_pos
+        new_y, new_x = new_pos
 
+        # Old board is self.__board because when calling this function
+        # the position hasn't changed yet
         old_board = self.__board
+
         old_square = old_board[old_y][old_x]
         
+
         transposed_board = self.transpose(old_board)
         
 
@@ -135,57 +145,70 @@ class Game:
             """
 
             if new_y < old_y and new_x < old_x:
-                print("x")
                 for i in range(1,8):
                     if (old_x - i, old_y - i) == (new_x, new_y):
-                        for j in range(1, old_x - new_x):
-                            if old_board[old_y - j][old_x - j] != None:
-                                return False
-                return True
+                        if abs(new_x - old_x) == 1 and abs(new_y - old_y) == 1:
+                            return True
+                        else:
+                            for j in range(1, old_x - new_x):
+                                if old_board[old_y - j][old_x - j] is not None:
+                                    return False
+                                else: 
+                                    return True
             
             elif new_y < old_y and new_x > old_x:
-                print("y")
                 for i in range(1,8):
                     if (old_x + i, old_y - i) == (new_x, new_y):
-                        for j in range(1, new_x - old_x):
-                            if old_board[old_y - j][old_x + j] != None:
-                                return False
-                return True
+                        if abs(new_x - old_x) == 1 and abs(new_y - old_y) == 1:
+                            return True
+                        else:
+                            for j in range(1, new_x - old_x):
+                                if old_board[old_y - j][old_x + j] is not None:
+                                    return False
+                                else: 
+                                    return True
             
             elif new_y > old_y and new_x < old_x:
-                print("z")
                 for i in range(1,8):
                     if (old_x - i, old_y + i) == (new_x, new_y):
-                        for j in range(1, old_x - new_x):
-                            if old_board[old_y + j][old_x - j] != None:
-                                return False
-                return True
+                        if abs(new_x - old_x) == 1 and abs(new_y - old_y) == 1:
+                            return True
+                        else:
+                            for j in range(1, old_x - new_x):
+                                if old_board[old_y + j][old_x - j] is not None:
+                                    return False
+                                else: 
+                                    return True
             
             elif new_y > old_y and new_x > old_x:
                 for i in range(1,8):
                     if (old_x + i, old_y + i) == (new_x, new_y):
-                        for j in range(1, new_x - old_x):
-                            if old_board[old_y + j][old_x + j] != None:
-                                return False
-                return True
+                        if abs(new_x - old_x) == 1 and abs(new_y - old_y) == 1:
+                            return True
+                        else:
+                            for j in range(1, new_x - old_x):
+                                if old_board[old_y + j][old_x + j] is not None:
+                                    return False
+                                else: 
+                                    return True
             
 
         def check_straight():
-            """Checks if there are other pieces on the way going straight from
+            """Checks if move is straight along a row or a column
+            and there are no other pieces on the way going straight from
             old to new position.
 
             :return: bool, True if no pieces; False if pieces
             """
-            #MAYBE don't check if new == old
             if new_y == old_y:
                 if new_x > old_x:
                     for i in range(old_x + 1, new_x):
-                        if old_board[old_y][i] != None:
+                        if old_board[old_y][i] is not None:
                             return False
                     return True
                 elif new_x < old_x:
                     for i in range(new_x + 1, old_x):
-                        if old_board[old_y][i] != None:
+                        if old_board[old_y][i] is not None:
                             return False
                     return True
 
@@ -194,57 +217,67 @@ class Game:
             elif new_x == old_x:
                 if new_y > old_y:
                     for i in range(old_y + 1, new_y):
-                        if transposed_board[old_x][i] != None:
+                        if transposed_board[old_x][i] is not None:
                             return False
                     return True
                 elif new_y < old_y:
                     for i in range(new_y + 1, old_y):
-                        if transposed_board[old_x][i] != None:
+                        if transposed_board[old_x][i] is not None:
                             return False
                     return True
+            else:
+                return False
 
 
         # False if same square
         if old_pos == new_pos:
             return False
         
+        # False if trying to capture own piece
+        if old_board[new_y][new_x] is not None:
+            if not old_square.islower() ^ old_board[new_y][new_x].islower():
+                return False 
+        
         # White pawn
-        elif old_square == "P":
+        if old_square == "P":
             if new_y - old_y == -1 and new_x == old_x:
-                if old_board[new_y][new_x] == None:
+                if old_board[new_y][new_x] is None:
                     return True
                 else:
                     return False
             elif new_y - old_y == -1 and abs(new_x - old_x) == 1:
-                if old_board[new_y][new_x] != None:
+                if old_board[new_y][new_x] is not None:
                     return True
                 else:
                     return False
             elif old_y == 6 and new_y - old_y == -2 and new_x == old_x and \
-                 old_board[old_y + - 1][old_x] == None:
-                if old_board[new_y][new_x] == None:
+                 old_board[old_y + - 1][old_x] is None:
+                if old_board[new_y][new_x] is None:
                     return True
                 else:
                     return False
+            return False
 
         # Black pawn
         elif old_square == "p":
             if new_y - old_y == 1 and new_x == old_x:
-                if old_board[new_y][new_x] == None:
+                if old_board[new_y][new_x] is None:
                     return True
                 else:
                     return False
             elif new_y - old_y == 1 and abs(new_x - old_x) == 1:
-                if old_board[new_y][new_x] != None:
+                if old_board[new_y][new_x] is not None:
                     return True
                 else:
                     return False
             elif old_y == 1 and new_y - old_y == 2 and new_x == old_x and \
-                 old_board[old_y + 1][old_x] == None:
-                if old_board[new_y][new_x] == None:
+                 old_board[old_y + 1][old_x] is None:
+                if old_board[new_y][new_x] is None:
                     return True
                 else:
                     return False
+            else:
+                return False
                 
         # Rook
         elif old_square in ("r", "R"):
@@ -369,6 +402,7 @@ class Game:
                 else:
                     print("{:<8}".format(str(piece)), end=" ")
                     count += 1
+
 
 from gui import *
 
