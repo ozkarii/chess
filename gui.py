@@ -10,6 +10,7 @@ from tkinter import ttk, colorchooser
 import os
 from game import Game
 import winsound
+import ai
 
 
 # TODO: lightsquare doesn't change on the first try
@@ -21,8 +22,6 @@ import winsound
 class Gui:
     """This class handles the gui for the chess game.
     """
-
-    
 
     def __init__(self):
         
@@ -47,7 +46,7 @@ class Gui:
         
         # Init an instance of the game class to handle the logic
         self.__game = Game()
-        
+
         # Sets the starting position
         self.__game.set_position()
         
@@ -80,8 +79,7 @@ class Gui:
             for y in range(1,9):
                 self.__square = tk.Button(
                     self.__mainwindow, width=10, height=5, 
-                    borderwidth=0, bg=self.__light_square_color,
-                    )
+                    borderwidth=0, bg=self.__light_square_color,)
                 self.__square.grid(row=x, column=y)
                 if x % 2 == 0 and y % 2 != 0:
                     self.__square.config(bg=self.__dark_square_color)
@@ -96,9 +94,7 @@ class Gui:
                 square.config(command=lambda row=row_count,
                               column=column_count: 
                               [self.move_piece(row, column),
-                               self.change_square_color(row, column),
-                               self.debug()
-                               ])
+                               self.change_square_color(row, column)])
 
         # Menubar
         self.__menubar = tk.Menu(self.__mainwindow, tearoff=0)
@@ -137,6 +133,14 @@ class Gui:
                                text=letters[x - 1], font=("Arial", 12)
                                )
             x_label.grid(column=x, row=9)
+
+        # Random move button
+        random_move = tk.Button(self.__mainwindow, text="Random\nmove",
+                                height=3, command=lambda: [ai.random_move(
+                                self.__game, self.__current_board),
+                                self.load_position(self.__current_board)])
+        random_move.grid(row=1, column=0, padx=5)
+        
 
         # Load start position
         self.load_position(self.__current_board)
