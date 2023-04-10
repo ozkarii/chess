@@ -1,4 +1,4 @@
 lightsquare;#f0e1c7
 darksquare;#a1784f
 highlight;red
-pieces;Small
+pieces;Cburnett

@@ -17,7 +17,7 @@ def evaluate_position(board):
     "b": 3, "B": 3,
     "r": 5, "R": 5,
     "q": 9, "Q": 9,
-    "k": 0, "K": 0
+    "k": 100, "K": 100
     }
     
     white_pieces = [piece for row in board 
@@ -84,11 +84,14 @@ def calculated_move(game, board, color):
     """Calculates the best legal move (currently only for black).
     Calculations are based on trying to make a move that allows
     the enemy to capure the least amount of material on the next move.
+    If there are multiple "best moves", return a random one among them.
+    Returns (None, None) if it's checkmate.
 
     :param game: Game, game-object
     :param board: list, board before the move
     :param color: str, color of the piece to be moved
     :return: tuple, (moved piece's coordinates, target square's coordinates)
+                    or (None, None) if checkmate
     """
 
     old_board = copy.deepcopy(board)
@@ -161,6 +164,8 @@ def calculated_move(game, board, color):
 
         # Find the maximum value in the dictionary
         max_value = max(move_eval.values())
+        if max_value < 100:
+            return None, None
 
         # Create a list of positions that have the maximum value
         max_keys = [key for key, value in move_eval.items() 

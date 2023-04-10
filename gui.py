@@ -11,10 +11,8 @@ import os
 from game import Game
 import winsound
 import ai
-import time
 
 
-# TODO: lightsquare doesn't change on the first try
 # TODO: implement flipped board functionality
 # TODO: x and y are mixed up when referencing board
 # TODO: use slef.__game.is_square_dark for checking square color
@@ -61,7 +59,6 @@ class Gui:
         # False: A piece has been selected and the next click will be for
         # moving that piece to the clicked square.
         self.__first_click = True
-        
         
         # Save the piece images into a dict
         # Value is a PhotoImage -object
@@ -137,29 +134,33 @@ class Gui:
 
 
         def calc_move():
-            """Executes the random move using ai.calculated_move()
+            """Executes the random move using ai.calculated_move
             """
             
             old, new = ai.calculated_move(self.__game, self.__current_board, "black")
-            self.__game.move_piece(old, new)
-            # I don't know why this is necessary
-            self.__current_board = self.__game.get_board()
-            self.load_position(self.__current_board)
+            if new is None:
+                checkmate.grid(row=4, column=0)
+            else:
+                self.__game.move_piece(old, new)
+                # I don't know why this is necessary
+                self.__current_board = self.__game.get_board()
+                self.load_position(self.__current_board)
 
         # Random move button
         random_move = tk.Button(self.__mainwindow, text="Random\nmove",
-                                height=3, command=lambda: [ai.random_move(
+                                height=3, width=9,
+                                command=lambda: [ai.random_move(
                                 self.__game, self.__current_board, "black"),
                                 self.load_position(self.__current_board)])
         random_move.grid(row=1, column=0, padx=5)
         
         # Calculated move button
         calculated_move = tk.Button(self.__mainwindow, text="Calculated\nmove",
-                                height=3, command=calc_move)
+                                height=3, width=9, command=calc_move)
         calculated_move.grid(row=2, column=0, padx=5)
-        
-        
 
+        # Checkmate label
+        checkmate = tk.Label(self.__mainwindow, text="Checkmate!", fg="red")
 
         # Load start position
         self.load_position(self.__current_board)

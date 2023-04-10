@@ -32,6 +32,8 @@ class Game:
         [None,None,None,None,None,None,None,None]
         ]
 
+        # Turn counter
+        self.__white_turn = True
 
     def get_board(self):
         """Returns the current board
