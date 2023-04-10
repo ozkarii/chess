@@ -19,6 +19,7 @@ class Game:
     def __init__(self):
         """Initializes necessary things for the game
         """
+
         # Data structure which holds the positional information of the pieces
         self.__board = [
         [None,None,None,None,None,None,None,None],
@@ -30,9 +31,6 @@ class Game:
         [None,None,None,None,None,None,None,None],
         [None,None,None,None,None,None,None,None]
         ]
-
-        # Data structure which records moves
-        self.__moves = []
 
 
     def get_board(self):

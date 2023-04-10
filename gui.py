@@ -137,6 +137,9 @@ class Gui:
 
 
         def calc_move():
+            """Executes the random move using ai.calculated_move()
+            """
+            
             old, new = ai.calculated_move(self.__game, self.__current_board, "black")
             self.__game.move_piece(old, new)
             # I don't know why this is necessary
@@ -231,13 +234,12 @@ class Gui:
 
         :param path: str, path to style file
         """
-        style_file = open(path, "r")
-        lines = style_file.readlines()
-        style_dict = {}
-        for line in lines:
-            style_dict[line.split(";")[0]] = \
-            line.split(";")[1].replace("\n","")
-        style_file.close()
+        with open(path, "r") as style_file:
+            lines = style_file.readlines()
+            style_dict = {}
+            for line in lines:
+                style_dict[line.split(";")[0]] = \
+                line.split(";")[1].replace("\n","")
 
         try:
             self.__light_square_color = style_dict["lightsquare"]
@@ -252,11 +254,14 @@ class Gui:
 
 
     def style_to_file(self, path):
+        """Writes the current style attributes to the style file.
+
+        :param path: str, path to style file
         """
-        """
-        style_file = open(path, "r")
-        lines = style_file.readlines()
-        style_file.close()
+
+        with open(path, "r") as style_file:
+            lines = style_file.readlines()
+
         lines[0] = f"lightsquare;{self.__light_square_color}\n"
         lines[1] = f"darksquare;{self.__dark_square_color}\n"
         lines[2] = f"highlight;{self.__highlight_color}\n"
@@ -264,7 +269,6 @@ class Gui:
         with open(path, "w") as style_file:
             for line in lines:
                 style_file.write(line)
-        style_file.close()
 
 
     def load_position_popup(self):
@@ -293,9 +297,13 @@ class Gui:
     def style_popup(self):
         """Opens a popup window for the style settings.
         """
+
         def set_color(target):
             """Sets the square colors based on current square_color attributes
+
+            :param target: str, specifies which style element is edited
             """
+
             if target == "highlight":
                 self.__highlight_color = colorchooser.askcolor()[1]
 
@@ -379,6 +387,7 @@ class Gui:
     def game_popup(self):
         """Loads a popup window for game settings.
         """
+
         popup = tk.Toplevel(self.__mainwindow)
         popup.grab_set()
         popup.title("Game settings")
@@ -430,8 +439,12 @@ class Gui:
     
 
     def move_piece(self, row, column):
+        """Moves the previously clicked piece to the now clicked square
+
+        :param row: int, row of the currently clicked square
+        :param column: int, column of the currently clicked square
         """
-        """
+
         if self.__current_board[row][column] == None and self.__first_click:
             pass
         elif self.__first_click:

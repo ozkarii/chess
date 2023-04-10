@@ -39,7 +39,12 @@ def evaluate_position(board):
 
 
 def piece_squares(board, color):
-    """
+    """Returns the squares' coordinates in which there are pieces of the
+    specified color.
+
+    :param board: list, board data structure to be iterated
+    :param color: str, color of the pieces to be checked for
+    :return: list, list of pieces' coordinates
     """
 
     if color == "white":
@@ -59,7 +64,11 @@ def piece_squares(board, color):
 
 
 def random_move(game, board, color):
-    """
+    """Makes a random legal move.
+    
+    :param game: Game, game-object
+    :param board: list, board before the move
+    :param color: str, color of the piece to be moved
     """
     
     while True:
@@ -72,7 +81,14 @@ def random_move(game, board, color):
 
 
 def calculated_move(game, board, color):
-    """
+    """Calculates the best legal move (currently only for black).
+    Calculations are based on trying to make a move that allows
+    the enemy to capure the least amount of material on the next move.
+
+    :param game: Game, game-object
+    :param board: list, board before the move
+    :param color: str, color of the piece to be moved
+    :return: tuple, (moved piece's coordinates, target square's coordinates)
     """
 
     old_board = copy.deepcopy(board)
@@ -83,7 +99,8 @@ def calculated_move(game, board, color):
     elif color == "black":
         
         # Will contain moves (old_pos, new_pos) as keys and lowest 
-        # black's position's evaluation after trying all white's moves on that position
+        # black's position's evaluation after trying all
+        # white's moves on that position
         move_eval = {}
 
         # Loop trough all legal black moves
@@ -98,18 +115,21 @@ def calculated_move(game, board, color):
                         new_board = copy.deepcopy(old_board)
                         new_board[old_pos[0]][old_pos[1]] = None
                         new_board[new_pos[0]][new_pos[1]] = piece
-                
-        
+
                         # old_board = board before any moves
-                        # new_board = board after black's random move (first move)
-                        # Loop through white's all possible moves and get black's position
-                        # evaluation for each
+                        # new_board = board after black's
+                        # random move (first move)
+
+                        # Loop through white's all possible moves 
+                        # and get black's position evaluation for each
                         while True:
-                            # Positions of white pieces after black's random move
+                            # Positions of white pieces after
+                            # black's random move
                             squares = piece_squares(new_board, "white")
                             # Black evaluation values list
                             black_evaluations = []
-                            # Set the board after black's move as the board to the game object
+                            # Set the board after black's move as
+                            # the board to the game object
                             game.set_position_list(new_board)
                             tmp_board = copy.deepcopy(new_board)
                             # For each white piece
@@ -117,35 +137,40 @@ def calculated_move(game, board, color):
                                 # Loop throug all squares on the board
                                 for i in range(8):
                                     for j in range(8):
-                                        # Move the white piece to that square if the move is legal
+                                        # Move the white piece to that square
+                                        # if the move is legal
                                         if game.move_piece(white_pos, (i, j)):
-                                            # Evaluate black's material after white's move and add the value to the list
+                                            # Evaluate black's material after
+                                            # white's move and add the value
+                                            # to the list
                                             black_evaluations.append(
-                                                evaluate_position(game.get_board())[1])
-                                            new_board = copy.deepcopy(tmp_board)
-                                            # Set the position back to how it was before white's move
+                                            evaluate_position(
+                                                game.get_board())[1])
+                                            new_board = copy.deepcopy(
+                                                tmp_board)
+                                            # Set the position back to
+                                            # how it was before white's move
                                             game.set_position_list(new_board)
                                         else:
                                             continue
-                            move_eval[(old_pos, new_pos)] = min(black_evaluations)
+                            move_eval[(old_pos, new_pos)] = \
+                            min(black_evaluations)
+
                             game.set_position_list(old_board)
                             break
+
         # Find the maximum value in the dictionary
         max_value = max(move_eval.values())
 
-        # Create a list of keys that have the maximum value
-        max_keys = [key for key, value in move_eval.items() if value == max_value]
+        # Create a list of positions that have the maximum value
+        max_keys = [key for key, value in move_eval.items() 
+                    if value == max_value]
 
-        # Choose a random key from the list of keys with the maximum value
+        # Choose a random position from the list of
+        # positions with the maximum value
         best_move = random.choice(max_keys)
-        return best_move[0], best_move[1]
+        return best_move
         
-
-def make_calc_move(game, board, color):
-    old, new = calculated_move(game, board, color)
-    game.move_piece(old, new)
-
-
 
 def main():
     game = gm.Game()
