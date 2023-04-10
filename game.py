@@ -42,7 +42,12 @@ class Game:
         """
         return self.__board
     
-    
+    def set_position_list(self, board):
+        """
+        """
+        self.__board = board
+
+
     def set_position(self, fen_string = START_POSITION):
         """Interprates position information in Forsyth-Edwards Notation
         given in <fen_string> and places the pieces to the right places
@@ -58,6 +63,7 @@ class Game:
         if fen_string == "":
             return False
         else:
+            # TODO: fix IndexError when providing valid fen
             try:
                 while row < 8:
                     for char in fen_string:
@@ -78,7 +84,7 @@ class Game:
                             column += 1
                 return True
 
-            except (KeyError, ValueError, IndexError,):
+            except (KeyError, ValueError, IndexError):
                 print("invalid")
 
 
@@ -116,7 +122,7 @@ class Game:
     
 
     def move_is_legal(self, old_pos, new_pos):
-        """Returns True/False depending on the move's legitimity.
+        """Returns True/False depending on the move is legal or not.
         
         :param old_pos: tuple, (row, column)
         :param new_pos: tuple, (row, column)

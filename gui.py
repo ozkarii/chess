@@ -11,6 +11,7 @@ import os
 from game import Game
 import winsound
 import ai
+import time
 
 
 # TODO: lightsquare doesn't change on the first try
@@ -134,13 +135,28 @@ class Gui:
                                )
             x_label.grid(column=x, row=9)
 
+
+        def calc_move():
+            old, new = ai.calculated_move(self.__game, self.__current_board, "black")
+            self.__game.move_piece(old, new)
+            # I don't know why this is necessary
+            self.__current_board = self.__game.get_board()
+            self.load_position(self.__current_board)
+
         # Random move button
         random_move = tk.Button(self.__mainwindow, text="Random\nmove",
                                 height=3, command=lambda: [ai.random_move(
-                                self.__game, self.__current_board),
+                                self.__game, self.__current_board, "black"),
                                 self.load_position(self.__current_board)])
         random_move.grid(row=1, column=0, padx=5)
         
+        # Calculated move button
+        calculated_move = tk.Button(self.__mainwindow, text="Calculated\nmove",
+                                height=3, command=calc_move)
+        calculated_move.grid(row=2, column=0, padx=5)
+        
+        
+
 
         # Load start position
         self.load_position(self.__current_board)
