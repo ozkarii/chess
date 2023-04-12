@@ -1,14 +1,10 @@
 """
 COMP.CS.100 
-Tekijä: Oskari Heinonen
+Author: Oskari Heinonen
 
 Chess game logic
 """
 
-# TODO: checking for check could be implemented by checking if capturing
-# the king is a legal move
-# TODO: make capturing own pieces illegal
-# TODO: moving one square diagonally is not allowed for bishop and queen
 
 class Game:
     """This class handles the game logic (moves, captures, turns etc.)
@@ -42,11 +38,6 @@ class Game:
         """
         return self.__board
     
-    def set_position_list(self, board):
-        """
-        """
-        self.__board = board
-
 
     def set_position(self, fen_string = START_POSITION):
         """Interprates position information in Forsyth-Edwards Notation
@@ -88,6 +79,14 @@ class Game:
                 print("invalid")
 
 
+    def set_position_list(self, board):
+        """Sets the given board as the new current board.
+
+        :param board: list, board as a list data structure
+        """
+        self.__board = board
+
+
     def list_to_fen(self, board):
         """Coverts the position information in <self.__board> 
         into a FEN-string.
@@ -121,11 +120,12 @@ class Game:
         return output_fen
     
 
-    def move_is_legal(self, old_pos, new_pos):
+    def move_is_legal(self, old_pos, new_pos, test=False):
         """Returns True/False depending on the move is legal or not.
         
         :param old_pos: tuple, (row, column)
         :param new_pos: tuple, (row, column)
+        :param test: bool, True to bypass correct turn checking
         """
 
         # For quicker access:
@@ -138,7 +138,6 @@ class Game:
 
         old_square = old_board[old_y][old_x]
         
-
         transposed_board = self.transpose(old_board)
         
 
@@ -159,8 +158,7 @@ class Game:
                             for j in range(1, old_x - new_x):
                                 if old_board[old_y - j][old_x - j] is not None:
                                     return False
-                                else: 
-                                    return True
+                            return True
             
             elif new_y < old_y and new_x > old_x:
                 for i in range(1,8):
@@ -171,8 +169,7 @@ class Game:
                             for j in range(1, new_x - old_x):
                                 if old_board[old_y - j][old_x + j] is not None:
                                     return False
-                                else: 
-                                    return True
+                            return True
             
             elif new_y > old_y and new_x < old_x:
                 for i in range(1,8):
@@ -183,8 +180,7 @@ class Game:
                             for j in range(1, old_x - new_x):
                                 if old_board[old_y + j][old_x - j] is not None:
                                     return False
-                                else: 
-                                    return True
+                            return True
             
             elif new_y > old_y and new_x > old_x:
                 for i in range(1,8):
@@ -195,8 +191,7 @@ class Game:
                             for j in range(1, new_x - old_x):
                                 if old_board[old_y + j][old_x + j] is not None:
                                     return False
-                                else: 
-                                    return True
+                            return True
             
 
         def check_straight():
@@ -233,7 +228,14 @@ class Game:
                     return True
             else:
                 return False
-
+        
+        # Check if correct turn if function not called for testing
+        if not test:
+            if old_board[old_y][old_x].isupper() and self.__white_turn or \
+               old_board[old_y][old_x].islower() and not self.__white_turn:
+               pass
+            else:
+                return False 
 
         # False if same square
         if old_pos == new_pos:
@@ -345,20 +347,25 @@ class Game:
                 return False
 
 
-    def move_piece(self, old_pos, new_pos):
+    def move_piece(self, old_pos, new_pos, test=False):
         """Takes in the old and new positions of the piece to be moved
         as a tuple: (row, column) and moves the piece in <self.__board>
         accordingly.
 
         :param old_pos: tuple, old position (row, column)
         :param new_pos: tuple, new position (row, column)
+        :param test: bool, 
         """
         
-        if self.move_is_legal(old_pos, new_pos):
+        if self.move_is_legal(old_pos, new_pos, test):
             piece = self.__board[old_pos[0]][old_pos[1]]
             self.__board[old_pos[0]][old_pos[1]] = None
             self.__board[new_pos[0]][new_pos[1]] = piece
-            return True
+            if not test:
+                self.__white_turn = not self.__white_turn
+                return True
+            else: 
+                return True
         else:
             return False
 
@@ -408,14 +415,3 @@ class Game:
                 else:
                     print("{:<8}".format(str(piece)), end=" ")
                     count += 1
-
-
-from gui import *
-
-def main():
-    gui = Gui()
-    gui.mainloop()
-    
-
-if __name__ == '__main__':
-    main()

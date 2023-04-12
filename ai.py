@@ -1,3 +1,11 @@
+"""
+COMP.CS.100
+Author: Oskari Heinonen
+
+Basic chess ai
+"""
+
+
 import game as gm
 import random
 import copy
@@ -76,7 +84,8 @@ def random_move(game, board, color):
         rand_new_pos = (rand_new_y, rand_new_x)
         rand_old_pos = random.choice(piece_squares(board, color))
         # If the move is legal, make it, and break
-        if game.move_piece(rand_old_pos, rand_new_pos):
+        if game.move_is_legal(rand_old_pos, rand_new_pos, test=True):
+            game.move_piece(rand_old_pos, rand_new_pos, test=False)
             break
 
 
@@ -113,7 +122,7 @@ def calculated_move(game, board, color):
                 for j in range(8):
                     new_pos = (i, j)
                     # TODO: fix old_board updating here
-                    if game.move_is_legal(old_pos, new_pos):
+                    if game.move_is_legal(old_pos, new_pos, test=True):
                         piece = old_board[old_pos[0]][old_pos[1]]
                         new_board = copy.deepcopy(old_board)
                         new_board[old_pos[0]][old_pos[1]] = None
@@ -142,7 +151,7 @@ def calculated_move(game, board, color):
                                     for j in range(8):
                                         # Move the white piece to that square
                                         # if the move is legal
-                                        if game.move_piece(white_pos, (i, j)):
+                                        if game.move_piece(white_pos, (i, j), test=True):
                                             # Evaluate black's material after
                                             # white's move and add the value
                                             # to the list
@@ -175,13 +184,3 @@ def calculated_move(game, board, color):
         # positions with the maximum value
         best_move = random.choice(max_keys)
         return best_move
-        
-
-def main():
-    game = gm.Game()
-    game.set_position()
-    board = game.get_board()
-    calculated_move(game, board, "black")
-
-if __name__ == "__main__":
-    main()

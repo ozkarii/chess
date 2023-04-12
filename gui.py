@@ -8,7 +8,6 @@ Chess gui
 import tkinter as tk
 from tkinter import ttk, colorchooser
 import os
-from game import Game
 import winsound
 import ai
 
@@ -22,10 +21,12 @@ class Gui:
     """This class handles the gui for the chess game.
     """
 
-    def __init__(self):
+    def __init__(self, game):
         
         """Initializes the gui-object with an empty chessboard
         and a menu.
+
+        :param game: game-object used in the game instance
         """
         
         self.__mainwindow = tk.Tk()
@@ -44,7 +45,7 @@ class Gui:
         self.style_from_file("config/style.txt")
         
         # Init an instance of the game class to handle the logic
-        self.__game = Game()
+        self.__game = game
 
         # Sets the starting position
         self.__game.set_position()
@@ -239,6 +240,7 @@ class Gui:
             lines = style_file.readlines()
             style_dict = {}
             for line in lines:
+                line = line.strip()
                 style_dict[line.split(";")[0]] = \
                 line.split(";")[1].replace("\n","")
 
@@ -464,8 +466,8 @@ class Gui:
                 self.__first_click = True
             
 
-    def mainloop(self):
-        """Executes mainloop for <self.__mainwindow>.
+    def start(self):
+        """Executes mainloop for <self.__mainwindow> ie. starts the gui.
         """
         self.__mainwindow.mainloop()
 
@@ -474,12 +476,5 @@ class Gui:
         """This method is used for debugging by executing 
         it from the main function.
         """
-
-
-def main():
-    gui = Gui()
-    gui.mainloop()
+        return
     
-
-if __name__ == '__main__':
-    main()

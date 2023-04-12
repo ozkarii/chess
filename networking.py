@@ -1,3 +1,11 @@
+"""
+COMP.CS.100
+Author: Oskari Heinonen
+
+Basic networking functionality for chess
+"""
+
+
 import socket
 
 
