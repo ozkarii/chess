@@ -106,7 +106,7 @@ class Gui:
         self.__game_menu.add_command(label="Reset position",
                                      command=lambda: [self.__game.set_position(),
                                      self.load_position(self.__current_board),
-                                     ])
+                                     self.__game.set_turn("white")])
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
@@ -236,6 +236,7 @@ class Gui:
 
         :param path: str, path to style file
         """
+
         with open(path, "r") as style_file:
             lines = style_file.readlines()
             style_dict = {}
@@ -255,7 +256,6 @@ class Gui:
             self.__highlight_color = "red"
 
 
-
     def style_to_file(self, path):
         """Writes the current style attributes to the style file.
 
@@ -264,6 +264,8 @@ class Gui:
 
         with open(path, "r") as style_file:
             lines = style_file.readlines()
+            for line in lines:
+                line = line.strip()
 
         lines[0] = f"lightsquare;{self.__light_square_color}\n"
         lines[1] = f"darksquare;{self.__dark_square_color}\n"
@@ -271,7 +273,7 @@ class Gui:
 
         with open(path, "w") as style_file:
             for line in lines:
-                style_file.write(line)
+                style_file.write(f"{line.strip()}\n")
 
 
     def load_position_popup(self):
@@ -336,7 +338,7 @@ class Gui:
             elif target == "reset":
                 self.__light_square_color = "#f0e1c7"
                 self.__dark_square_color = "#a1784f"
-                self.__highlight_color = "red   "
+                self.__highlight_color = "red"
                 for x in range(0,8):
                     for y in range(0,8):
                         if x % 2 == 0 and y % 2 != 0:
@@ -354,7 +356,6 @@ class Gui:
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
 
-        
         pick_highlight_color = tk.Button(popup, text="Highlight color...")
         pick_highlight_color.config(command= lambda: set_color("highlight"))
         pick_highlight_color.grid(row=0, column=1, padx=10, pady=5)
@@ -397,7 +398,6 @@ class Gui:
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
-
 
         gamemode_1 = tk.Radiobutton(popup, text="Normal", value="normal")
         gamemode_2 = tk.Radiobutton(popup, text="Pawns only", value="pawns")
@@ -469,6 +469,7 @@ class Gui:
     def start(self):
         """Executes mainloop for <self.__mainwindow> ie. starts the gui.
         """
+
         self.__mainwindow.mainloop()
 
     
@@ -476,5 +477,6 @@ class Gui:
         """This method is used for debugging by executing 
         it from the main function.
         """
+
         return
     

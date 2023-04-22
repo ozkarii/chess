@@ -13,6 +13,5 @@ def main():
     gui = Gui(game)
     gui.start()
 
-
 if __name__ == "__main__":
     main()

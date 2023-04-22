@@ -109,25 +109,21 @@ def calculated_move(game, board, color):
         return None
     
     elif color == "black":
-        
         # Will contain moves (old_pos, new_pos) as keys and lowest 
         # black's position's evaluation after trying all
         # white's moves on that position
         move_eval = {}
-
         # Loop trough all legal black moves
         black_squares = piece_squares(old_board, "black")
         for old_pos in black_squares:
             for i in range(8):
                 for j in range(8):
                     new_pos = (i, j)
-                    # TODO: fix old_board updating here
                     if game.move_is_legal(old_pos, new_pos, test=True):
                         piece = old_board[old_pos[0]][old_pos[1]]
                         new_board = copy.deepcopy(old_board)
                         new_board[old_pos[0]][old_pos[1]] = None
                         new_board[new_pos[0]][new_pos[1]] = piece
-
                         # old_board = board before any moves
                         # new_board = board after black's
                         # random move (first move)
@@ -142,7 +138,7 @@ def calculated_move(game, board, color):
                             black_evaluations = []
                             # Set the board after black's move as
                             # the board to the game object
-                            game.set_position_list(new_board)
+                            game.set_position_from_list(new_board)
                             tmp_board = copy.deepcopy(new_board)
                             # For each white piece
                             for white_pos in squares:
@@ -162,13 +158,13 @@ def calculated_move(game, board, color):
                                                 tmp_board)
                                             # Set the position back to
                                             # how it was before white's move
-                                            game.set_position_list(new_board)
+                                            game.set_position_from_list(new_board)
                                         else:
                                             continue
                             move_eval[(old_pos, new_pos)] = \
                             min(black_evaluations)
 
-                            game.set_position_list(old_board)
+                            game.set_position_from_list(old_board)
                             break
 
         # Find the maximum value in the dictionary

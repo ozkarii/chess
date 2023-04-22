@@ -36,6 +36,7 @@ class Game:
         
         :return: list, board data structure
         """
+
         return self.__board
     
 
@@ -48,6 +49,7 @@ class Game:
                         Notation (FEN)
         :return: bool, True if <fen_string> was valid, False if not
         """
+
         row = 0
         column = 0
 
@@ -79,11 +81,12 @@ class Game:
                 print("invalid")
 
 
-    def set_position_list(self, board):
+    def set_position_from_list(self, board):
         """Sets the given board as the new current board.
 
         :param board: list, board as a list data structure
         """
+
         self.__board = board
 
 
@@ -125,7 +128,7 @@ class Game:
         
         :param old_pos: tuple, (row, column)
         :param new_pos: tuple, (row, column)
-        :param test: bool, True to bypass correct turn checking
+        :param test: bool, True to bypass correct turn checking (used for ai)
         """
 
         # For quicker access:
@@ -201,6 +204,7 @@ class Game:
 
             :return: bool, True if no pieces; False if pieces
             """
+
             if new_y == old_y:
                 if new_x > old_x:
                     for i in range(old_x + 1, new_x):
@@ -354,7 +358,7 @@ class Game:
 
         :param old_pos: tuple, old position (row, column)
         :param new_pos: tuple, new position (row, column)
-        :param test: bool, 
+        :param test: bool, doesn't change turn if true
         """
         
         if self.move_is_legal(old_pos, new_pos, test):
@@ -375,6 +379,7 @@ class Game:
         
         :param row: int, square's row
         :param column: int, square's column
+        :return: bool, True if the square is dark
         """
 
         if row % 2 == 0 and column % 2 != 0:
@@ -383,6 +388,21 @@ class Game:
             return True
         else:
             return False
+
+
+    def set_turn(self, color):
+        """Sets whose turn it is by modifying the value of
+        self.__white_turn.
+
+        :param color: str, color of the pieces the game's turn should be set to
+        """
+
+        if color == "white":
+            self.__white_turn = True
+        elif color == "black":
+            self.__white_turn = False
+        else:
+            raise ValueError("Invalid color, must be 'black' or 'white'")
 
 
     def transpose(self, matrix):
@@ -406,6 +426,7 @@ class Game:
     def print_board(self):
         """for debug purposes
         """
+        
         count = 0
         for row in self.__board:
             for piece in row:
