@@ -11,11 +11,9 @@ import os
 import winsound
 import ai
 
-
 # TODO: implement flipped board functionality
-# TODO: x and y are mixed up when referencing board
-# TODO: use slef.__game.is_square_dark for checking square color
 # TODO: make window sizes fixed
+# TODO: config class for reading and writing
 
 class Gui:
     """This class handles the gui for the chess game.
@@ -41,8 +39,11 @@ class Gui:
         # Define image-object for empty image
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
         
-        # load style from file
+        # load style attributes from file
         self.style_from_file("config/style.txt")
+
+        # Load game config attributes from file
+        self.game_config_from_file("config/game.txt")
         
         # Init an instance of the game class to handle the logic
         self.__game = game
@@ -52,8 +53,6 @@ class Gui:
         
         # Current board assigned to a variable
         self.__current_board = self.__game.get_board()
-
-
 
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
@@ -78,11 +77,9 @@ class Gui:
             for y in range(1,9):
                 self.__square = tk.Button(
                     self.__mainwindow, width=10, height=5, 
-                    borderwidth=0, bg=self.__light_square_color,)
+                    borderwidth=0, bg=self.__light_square_color)
                 self.__square.grid(row=x, column=y)
-                if x % 2 == 0 and y % 2 != 0:
-                    self.__square.config(bg=self.__dark_square_color)
-                elif x % 2 != 0 and y % 2 == 0:
+                if self.__game.square_is_dark(x, y):
                     self.__square.config(bg=self.__dark_square_color)
                 self.__row.append(self.__square)
             self.__squares.append(self.__row)
@@ -119,52 +116,51 @@ class Gui:
 
         self.__mainwindow.config(menu=self.__menubar)
         
-
         # Labels
         for y in range(1,9):
             y_label = tk.Label(self.__mainwindow, 
-                               text=str(y), font=("Arial", 12)
+                               text=str(y), font=("Arial", 13)
                                )
-            y_label.grid(column=9, row=y)
+            y_label.grid(column=0, row=y)
         letters = ["A","B","C","D","E","F","G","H"]
         for x in range(1,9):
             x_label = tk.Label(self.__mainwindow, 
-                               text=letters[x - 1], font=("Arial", 12)
+                               text=letters[x - 1], font=("Arial", 13)
                                )
             x_label.grid(column=x, row=9)
 
-
-        def calc_move():
-            """Executes the random move using ai.calculated_move
-            """
-            
-            old, new = ai.calculated_move(self.__game, self.__current_board, "black")
-            if new is None:
-                checkmate.grid(row=4, column=0)
-            else:
-                self.__game.move_piece(old, new)
-                # I don't know why this is necessary
-                self.__current_board = self.__game.get_board()
-                self.load_position(self.__current_board)
-
-        # Random move button
-        random_move = tk.Button(self.__mainwindow, text="Random\nmove",
-                                height=3, width=9,
-                                command=lambda: [ai.random_move(
-                                self.__game, self.__current_board, "black"),
-                                self.load_position(self.__current_board)])
-        random_move.grid(row=1, column=0, padx=5)
-        
-        # Calculated move button
-        calculated_move = tk.Button(self.__mainwindow, text="Calculated\nmove",
-                                height=3, width=9, command=calc_move)
-        calculated_move.grid(row=2, column=0, padx=5)
-
         # Checkmate label
-        checkmate = tk.Label(self.__mainwindow, text="Checkmate!", fg="red")
+        self.__checkmate_label = tk.Label(self.__mainwindow, text="Checkmate!", fg="red",
+                                          font=("Arial", 10))
 
         # Load start position
         self.load_position(self.__current_board)
+
+
+    def ai_move(self):
+        """Executes ai move
+        """
+        print(self.__ai_playstyle)
+        if self.__ai_playstyle == "None":
+            pass
+
+        elif self.__ai_playstyle == "Defensive":
+            old, new = ai.calculated_move(self.__game, self.__current_board, "black")
+            if new is None:
+                self.__checkmate_label.grid(row=10, column=1)
+            else:
+                self.__game.move_piece(old, new)
+                self.__current_board = self.__game.get_board()
+                self.load_position(self.__current_board)
+        
+        #TODO checkmate (also modify ai.random_move)
+        elif self.__ai_playstyle == "Random":
+            ai.random_move(self.__game, self.__current_board, "black")
+            self.__current_board = self.__game.get_board()
+            self.load_position(self.__current_board)
+        
+        elif self.__ai_playstyle == "Mixed":
+            pass
 
 
     def change_square_color(self, row, column):
@@ -181,9 +177,7 @@ class Gui:
         elif self.__first_click:
             for x_count, x in enumerate(self.__squares):
                 for y_count, y in enumerate(x):
-                    if x_count % 2 == 0 and y_count % 2 != 0:
-                        y.config(bg=self.__dark_square_color)
-                    elif x_count % 2 != 0 and y_count % 2 == 0:
+                    if self.__game.square_is_dark(x_count, y_count):
                         y.config(bg=self.__dark_square_color)
                     else:
                         y.config(bg=self.__light_square_color)
@@ -205,25 +199,20 @@ class Gui:
                 if new_color_square:
                     previous_row = new_color_square[0]
                     previous_column = new_color_square[1]
-                    if previous_row % 2 == 0 and previous_column % 2 != 0:
-                        self.__squares[previous_row][previous_column].config(
-                            bg=self.__dark_square_color)
-                    elif previous_row % 2 != 0 and previous_column % 2 == 0:
+                    if self.__game.square_is_dark(previous_row, previous_column):
                         self.__squares[previous_row][previous_column].config(
                             bg=self.__dark_square_color)
                     else:
                         self.__squares[previous_row][previous_column].config(
                             bg=self.__light_square_color)
 
-                # Set the clicked square to new_color
+                # Set the clicked square to highlight color
                 self.__squares[row][column].config(bg=self.__highlight_color)
 
-            # If the clicked square is in new_color, set it to the original color
+            # If the clicked square is in highlight color, 
+            # set it to the original color
             else:
-                if row % 2 == 0 and column % 2 != 0:
-                    self.__squares[row][column].config(
-                        bg=self.__dark_square_color)
-                elif row % 2 != 0 and column % 2 == 0:
+                if self.__game.square_is_dark(row, column):
                     self.__squares[row][column].config(
                         bg=self.__dark_square_color)
                 else:
@@ -232,7 +221,7 @@ class Gui:
 
 
     def style_from_file(self, path):
-        """Assigns style settings to attributes from a file.
+        """Assigns style settings to the attributes from a file.
 
         :param path: str, path to style file
         """
@@ -249,17 +238,19 @@ class Gui:
             self.__light_square_color = style_dict["lightsquare"]
             self.__dark_square_color = style_dict["darksquare"]
             self.__highlight_color = style_dict["highlight"]
+            self.__piece_style = style_dict["pieces"]
 
         except KeyError:
             self.__light_square_color = "#f0e1c7"
             self.__dark_square_color = "#a1784f"
             self.__highlight_color = "red"
+            self.__piece_style = "Cburnett"
 
 
     def style_to_file(self, path):
         """Writes the current style attributes to the style file.
 
-        :param path: str, path to style file
+        :param path: str, relative path to style file
         """
 
         with open(path, "r") as style_file:
@@ -270,10 +261,55 @@ class Gui:
         lines[0] = f"lightsquare;{self.__light_square_color}\n"
         lines[1] = f"darksquare;{self.__dark_square_color}\n"
         lines[2] = f"highlight;{self.__highlight_color}\n"
+        lines[3] = f"pieces;{self.__piece_style}\n"
 
         with open(path, "w") as style_file:
             for line in lines:
                 style_file.write(f"{line.strip()}\n")
+
+
+    def game_config_from_file(self, path):
+        """Assigns game settings to the attributes from a file.
+
+        :param path: str, path to game config file
+        """
+
+        with open(path, "r") as game_config_file:
+            lines = game_config_file.readlines()
+            game_config_dict = {}
+            for line in lines:
+                line = line.strip()
+                game_config_dict[line.split(";")[0]] = \
+                line.split(";")[1].replace("\n","")
+
+        try:
+            self.__ai_playstyle = game_config_dict["ai_playstyle"]
+            self.__ai_playstyle_var = tk.StringVar(
+                self.__mainwindow, game_config_dict["ai_playstyle"])
+
+        except KeyError:
+            self.__ai_playstyle = "Defensive"
+            self.__ai_playstyle_var = tk.StringVar(self.__mainwindow,
+                                                   "Defensive")
+
+
+    def game_config_to_file(self, path):
+        """Writes the current game config attributes to the style file.
+
+        :param path: str, relative path to game config file
+        """
+
+        with open(path, "r") as game_config_file:
+            lines = game_config_file.readlines()
+            for line in lines:
+                line = line.strip()
+
+        lines[0] = f"ai_playstyle;{self.__ai_playstyle_var.get()}\n"
+
+        with open(path, "w") as game_config_file:
+            print(lines)
+            for line in lines:
+                game_config_file.write(f"{line.strip()}\n")
 
 
     def load_position_popup(self):
@@ -286,9 +322,13 @@ class Gui:
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"500x150+{main_x + 20}+{main_y + 20}")
+
         usr_input = tk.StringVar(popup)
         entry = tk.Entry(popup,textvariable=usr_input, width=65)
-        entry.grid(padx=50, pady=50, row=0, column=0)
+        entry.grid(padx=50, pady=25, row=0, column=0)
+
+        error_text = tk.Label(popup, fg="red")
+        error_text.grid(row=1, column=0)
         # TODO: add error message when self.__game.set_position(entry.get())
         # returns False
         load_button = tk.Button(
@@ -296,7 +336,7 @@ class Gui:
                       command=lambda: [
                             self.__game.set_position(entry.get()),
                             self.load_position(self.__current_board)])
-        load_button.grid(row=1, column=0)
+        load_button.grid(row=2, column=0)
 
 
     def style_popup(self):
@@ -316,10 +356,7 @@ class Gui:
                 self.__light_square_color = colorchooser.askcolor()[1]    
                 for x in range(0,8):
                     for y in range(0,8):
-                        if x % 2 == 0 and y % 2 != 0:
-                            self.__squares[x][y].config(
-                                bg=self.__dark_square_color)
-                        elif x % 2 != 0 and y % 2 == 0:
+                        if self.__game.square_is_dark(x, y):
                             self.__squares[x][y].config(
                                 bg=self.__dark_square_color)
                         else:
@@ -330,9 +367,7 @@ class Gui:
                 self.__dark_square_color = colorchooser.askcolor()[1]
                 for x in range(0,8):
                     for y in range(0,8):
-                        if x % 2 == 0 and y % 2 != 0:
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
-                        elif x % 2 != 0 and y % 2 == 0:
+                        if self.__game.square_is_dark(x, y):
                             self.__squares[x][y].config(bg=self.__dark_square_color)
             
             elif target == "reset":
@@ -341,9 +376,7 @@ class Gui:
                 self.__highlight_color = "red"
                 for x in range(0,8):
                     for y in range(0,8):
-                        if x % 2 == 0 and y % 2 != 0:
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
-                        elif x % 2 != 0 and y % 2 == 0:
+                        if self.__game.square_is_dark(x, y):
                             self.__squares[x][y].config(bg=self.__dark_square_color)
                         else:
                             self.__squares[x][y].config(bg=self.__light_square_color)
@@ -373,7 +406,7 @@ class Gui:
         reset_colors.grid(row=3, column=1, padx=10, pady=5)
 
         piece_style_menu = ttk.Combobox(popup, state="readonly")
-        piece_style_menu["values"] = ("Cburnett", "Small")
+        piece_style_menu["values"] = ("Cburnett")
         piece_style_menu["state"] = 'readonly'
         piece_style_menu.current(0)
         piece_style_menu.grid(row=1, column=0, padx=10)
@@ -391,20 +424,41 @@ class Gui:
     def game_popup(self):
         """Loads a popup window for game settings.
         """
-
+        
         popup = tk.Toplevel(self.__mainwindow)
         popup.grab_set()
         popup.title("Game settings")
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
-        popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
+        popup.geometry(f"275x175+{main_x + 20}+{main_y + 20}")
 
-        gamemode_1 = tk.Radiobutton(popup, text="Normal", value="normal")
-        gamemode_2 = tk.Radiobutton(popup, text="Pawns only", value="pawns")
+        ai_playstyle_1 = tk.Radiobutton(popup, text="Defensive", 
+                                        variable=self.__ai_playstyle_var,
+                                        value="Defensive")
+        ai_playstyle_2 = tk.Radiobutton(popup, text="Random", 
+                                        variable=self.__ai_playstyle_var,
+                                        value="Random")
+        # ai_playstyle_3 = tk.Radiobutton(popup, text="Mixed", 
+        #                                 variable=self.__ai_playstyle_var,
+        #                                 value="Mixed")
+        ai_playstyle_4 = tk.Radiobutton(popup, text="No AI (2-player mode)",
+                                        variable=self.__ai_playstyle_var,
+                                        value="None")
 
-        gamemode_1.pack()
-        gamemode_2.pack()
+        ai_playstyle_1.grid(row=1, padx=100)
+        ai_playstyle_2.grid(row=2, padx=100)
+        # ai_playstyle_3.grid(row=3, padx=60)
+        ai_playstyle_4.grid(row=4, padx=60)
 
+        save_button = tk.Button(popup, text="Save", command=lambda: [
+                                self.game_config_to_file("config/game.txt"),
+                                self.game_config_from_file("config/game.txt")],
+                                width=10)
+        
+        save_button.grid(row=5, padx=60, pady=30)
+
+        ai_label = tk.Label(popup, text="AI playstyle", font=("Helvetica", 11))
+        ai_label.grid(row=0, padx=60, pady=2)
 
 
     def load_position(self, board):
@@ -439,7 +493,7 @@ class Gui:
                         width= 75,
                         height = 75
                         )
-    
+
 
     def move_piece(self, row, column):
         """Moves the previously clicked piece to the now clicked square
@@ -448,23 +502,24 @@ class Gui:
         :param column: int, column of the currently clicked square
         """
 
-        if self.__current_board[row][column] == None and self.__first_click:
+        if self.__current_board[row][column] is None and self.__first_click:
             pass
         elif self.__first_click:
             self.__old_position = (row, column)
             self.__first_click = False
         else:
             self.__new_position = (row, column)
-            # If move_piece-funcion returns True ie. the move is legal,
+            # If move_piece-function returns True i.e. the move is legal,
             # move the pieces
             if self.__game.move_piece(self.__old_position, self.__new_position):
                 self.load_position(self.__current_board)
                 if self.__old_position != self.__new_position:
-                    winsound.Beep(500,50)
+                    winsound.Beep(500, 50)
+                    self.ai_move()
                 self.__first_click = True
             else:
                 self.__first_click = True
-            
+
 
     def start(self):
         """Executes mainloop for <self.__mainwindow> ie. starts the gui.
@@ -479,4 +534,3 @@ class Gui:
         """
 
         return
-    

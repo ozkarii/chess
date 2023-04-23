@@ -70,7 +70,7 @@ def piece_squares(board, color):
     else:
         raise ValueError("Invalid color")    
 
-
+#TODO Maybe make this return the coordinates instead of moving
 def random_move(game, board, color):
     """Makes a random legal move.
     
@@ -115,6 +115,7 @@ def calculated_move(game, board, color):
         move_eval = {}
         # Loop trough all legal black moves
         black_squares = piece_squares(old_board, "black")
+        #TODO: optimize
         for old_pos in black_squares:
             for i in range(8):
                 for j in range(8):
@@ -178,5 +179,14 @@ def calculated_move(game, board, color):
 
         # Choose a random position from the list of
         # positions with the maximum value
+        #or
+        # TODO:Choose the position which has the lowest white material value
+        # game.set_position_from_list(old_board)
+        # white_evals = {}
+        # for move in max_keys:
+        #     game.move_piece(move[0], move[1], True)
+        #     white_evals[move] = evaluate_position(board)[0]
+        #     game.move_piece(move[1], move[0])
+        #     print(board)
         best_move = random.choice(max_keys)
         return best_move
