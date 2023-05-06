@@ -52,33 +52,47 @@ class Game:
 
         row = 0
         column = 0
+        new_board = [[None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None],
+                    [None,None,None,None,None,None,None,None]
+                    ]
 
         if fen_string == "":
             return False
         else:
             # TODO: fix IndexError when providing valid fen?
             try:
-                while row < 8:
-                    for char in fen_string:
-                        if char == "/":
-                            column = 0
-                            row += 1
-                        elif column == 8:
-                            column = 0
-                            row += 1
-                        elif row == 8:
-                            break
-                        elif char.isnumeric():
-                            for i in range(column, column + int(char)):
-                                self.__board[row][i] = None
-                            column += int(char)
-                        else:
-                            self.__board[row][column] = char
-                            column += 1
+                for char in fen_string:
+                    
+                    if char.lower() not in ["p", "n", "b", "r", "q", "k", "/"] \
+                        and not char.isnumeric() or char == "0":
+                        return False
+                    elif char == "/":
+                        column = 0
+                        row += 1
+                    elif column == 9 and char != "/":
+                        return False
+                    elif row == 8:
+                        break
+                    elif char.isnumeric():
+                        for i in range(column, column + int(char)):
+                            new_board[row][i] = None
+                        column += int(char)
+                    elif row == 8 and column == 8:
+                        break
+                    else:
+                        new_board[row][column] = char
+                        column += 1
+                self.__board = new_board
                 return True
-
+            
             except (KeyError, ValueError, IndexError):
-                print("invalid")
+                return False
 
 
     def set_position_from_list(self, board):

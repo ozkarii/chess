@@ -6,7 +6,6 @@ Basic chess ai
 """
 
 
-import game as gm
 import random
 import copy
 

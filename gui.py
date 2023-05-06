@@ -10,6 +10,7 @@ from tkinter import ttk, colorchooser
 import os
 import winsound
 import ai
+import threading
 
 # TODO: implement flipped board functionality
 # TODO: make window sizes fixed
@@ -111,7 +112,7 @@ class Gui:
         self.__settings_menu.add_command(label="Game", command=self.game_popup)
         self.__settings_menu.add_command(label="Style",
                                          command=self.style_popup)
-        self.__settings_menu.add_command(label="Network")
+        # self.__settings_menu.add_command(label="Network")
         self.__menubar.add_cascade(menu=self.__settings_menu, label="Settings")
 
         self.__mainwindow.config(menu=self.__menubar)
@@ -128,6 +129,8 @@ class Gui:
                                text=letters[x - 1], font=("Arial", 13)
                                )
             x_label.grid(column=x, row=9)
+        
+        tk.Label(self.__mainwindow, text="   ").grid(row=2, column=9)
 
         # Checkmate label
         self.__checkmate_label = tk.Label(self.__mainwindow, text="Checkmate!", fg="red",
@@ -140,19 +143,19 @@ class Gui:
     def ai_move(self):
         """Executes ai move
         """
-        print(self.__ai_playstyle)
+
         if self.__ai_playstyle == "None":
             pass
 
         elif self.__ai_playstyle == "Defensive":
-            old, new = ai.calculated_move(self.__game, self.__current_board, "black")
-            if new is None:
-                self.__checkmate_label.grid(row=10, column=1)
-            else:
-                self.__game.move_piece(old, new)
-                self.__current_board = self.__game.get_board()
-                self.load_position(self.__current_board)
-        
+                old, new = ai.calculated_move(self.__game, self.__current_board, "black")
+                if new is None:
+                    self.__checkmate_label.grid(row=10, column=1)
+                else:
+                    self.__game.move_piece(old, new)
+                    self.__current_board = self.__game.get_board()
+                    self.load_position(self.__current_board)
+
         #TODO checkmate (also modify ai.random_move)
         elif self.__ai_playstyle == "Random":
             ai.random_move(self.__game, self.__current_board, "black")
@@ -307,7 +310,6 @@ class Gui:
         lines[0] = f"ai_playstyle;{self.__ai_playstyle_var.get()}\n"
 
         with open(path, "w") as game_config_file:
-            print(lines)
             for line in lines:
                 game_config_file.write(f"{line.strip()}\n")
 
@@ -326,16 +328,16 @@ class Gui:
         usr_input = tk.StringVar(popup)
         entry = tk.Entry(popup,textvariable=usr_input, width=65)
         entry.grid(padx=50, pady=25, row=0, column=0)
-
-        error_text = tk.Label(popup, fg="red")
-        error_text.grid(row=1, column=0)
-        # TODO: add error message when self.__game.set_position(entry.get())
-        # returns False
-        load_button = tk.Button(
-                      popup, text="Load", 
-                      command=lambda: [
-                            self.__game.set_position(entry.get()),
-                            self.load_position(self.__current_board)])
+        
+        def set_pos():
+            if self.__game.set_position(entry.get()):
+                self.load_position(self.__game.get_board())
+                self.__current_board = self.__game.get_board()
+            else:
+                error_label = tk.Label(popup, text="Invalid FEN-string", fg="red")
+                error_label.grid(row=1)
+        
+        load_button = tk.Button(popup, text="Load", command=set_pos)
         load_button.grid(row=2, column=0)
 
 
@@ -494,7 +496,6 @@ class Gui:
                         height = 75
                         )
 
-
     def move_piece(self, row, column):
         """Moves the previously clicked piece to the now clicked square
 
@@ -514,7 +515,7 @@ class Gui:
             if self.__game.move_piece(self.__old_position, self.__new_position):
                 self.load_position(self.__current_board)
                 if self.__old_position != self.__new_position:
-                    winsound.Beep(500, 50)
+                    winsound.Beep(587, 100)
                     self.ai_move()
                 self.__first_click = True
             else:
@@ -524,7 +525,7 @@ class Gui:
     def start(self):
         """Executes mainloop for <self.__mainwindow> ie. starts the gui.
         """
-
+        
         self.__mainwindow.mainloop()
 
     
