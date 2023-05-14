@@ -1,5 +1,5 @@
 # Chess
-Written in standard python
+Written in standard python. Start by running main.py.
 
 ## Features:
 - Can only make legal moves
