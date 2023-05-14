@@ -2,7 +2,7 @@
 COMP.CS.100 
 Author: Oskari Heinonen
 
-Chess game logic
+Logic for chess
 """
 
 
@@ -65,7 +65,6 @@ class Game:
         if fen_string == "":
             return False
         else:
-            # TODO: fix IndexError when providing valid fen?
             try:
                 for char in fen_string:
                     
@@ -387,7 +386,7 @@ class Game:
         else:
             return False
 
-    #TODO: this might not have to be a method
+
     def square_is_dark(self, row, column):
         """Returns True if the given square is dark.
         

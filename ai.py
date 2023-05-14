@@ -2,13 +2,11 @@
 COMP.CS.100
 Author: Oskari Heinonen
 
-Basic chess ai
+Basic AI functionality fo chess
 """
-
 
 import random
 import copy
-
 
 PIECE_VALUES = {
     "p": 1, "P": 1,
@@ -69,7 +67,7 @@ def piece_squares(board, color):
     else:
         raise ValueError("Invalid color")    
 
-#TODO Maybe make this return the coordinates instead of moving
+
 def random_move(game, board, color):
     """Makes a random legal move.
     
@@ -87,19 +85,6 @@ def random_move(game, board, color):
     game.move_piece(old, new)
 
 
-    # while True:
-    #     rand_new_y, rand_new_x = random.randint(0,7), random.randint(0,7)
-    #     rand_new_pos = (rand_new_y, rand_new_x)
-    #     rand_old_pos = random.choice(piece_squares(board, color))
-    #     # If the move is legal, make it, and break
-    #     if game.move_is_legal(rand_old_pos, rand_new_pos, test=True):
-    #         game.move_piece(rand_old_pos, rand_new_pos, test=False)
-    #         break
-        
-
-
-# TODO: init a new game object for testing purposes instead of
-# doing everything on the actual game object
 def calculated_move(game, board, color):
     """Calculates the best legal move (currently only for black).
     Calculations are based on trying to make a move that allows
@@ -126,7 +111,6 @@ def calculated_move(game, board, color):
         move_eval = {}
         # Loop trough all legal black moves
         black_squares = piece_squares(old_board, "black")
-        #TODO: optimize
         for old_pos in black_squares:
             for i in range(8):
                 for j in range(8):
@@ -190,16 +174,5 @@ def calculated_move(game, board, color):
 
         # Choose a random position from the list of
         # positions with the maximum value
-        #or
-        # TODO:Choose the position which has the lowest white material value
-        # game.set_position_from_list(old_board)
-        # white_evals = {}
-        # for move in max_keys:
-        #     game.move_piece(move[0], move[1], True)
-        #     white_evals[move] = evaluate_position(board)[0]
-        #     game.move_piece(move[1], move[0])
-        #     print(board)
         best_move = random.choice(max_keys)
         return best_move
-
-

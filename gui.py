@@ -2,7 +2,7 @@
 COMP.CS.100 
 Tekijä: Oskari Heinonen
 
-Chess gui
+Gui for chess
 """
 
 import tkinter as tk
@@ -11,9 +11,6 @@ import os
 import winsound
 import ai
 
-# TODO: implement flipped board functionality
-# TODO: make window sizes fixed
-# TODO: config class for reading and writing
 
 class Gui:
     """This class handles the gui for the chess game.
@@ -97,7 +94,6 @@ class Gui:
         self.__game_menu = tk.Menu(self.__menubar, tearoff=0)
         self.__game_menu.add_command(label="Load position", 
                                      command=self.load_position_popup)
-        # TODO: remove highlight when resetting
         self.__game_menu.add_command(label="Reset position",
                                      command=lambda: [self.__game.set_position(),
                                      self.load_position(self.__game.get_board()),
@@ -152,7 +148,6 @@ class Gui:
                     self.__game.move_piece(old, new)
                     self.load_position(self.__game.get_board())
 
-        #TODO checkmate (also modify ai.random_move)
         elif self.__ai_playstyle == "Random":
             ai.random_move(self.__game, self.__game.get_board(), "black")
             self.load_position(self.__game.get_board())
@@ -526,11 +521,3 @@ class Gui:
         """
         
         self.__mainwindow.mainloop()
-
-    
-    def debug(self):
-        """This method is used for debugging by executing 
-        it from the main function.
-        """
-
-        return
