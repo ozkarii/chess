@@ -10,7 +10,6 @@ from tkinter import ttk, colorchooser
 import os
 import winsound
 import ai
-import threading
 
 # TODO: implement flipped board functionality
 # TODO: make window sizes fixed
@@ -30,6 +29,7 @@ class Gui:
         
         self.__mainwindow = tk.Tk()
         self.__mainwindow.geometry("+600+100")
+        self.__mainwindow.resizable(False, False)
         self.__mainwindow.title("Chess")
         logo = tk.PhotoImage(file="pictures/logo.png")
         self.__mainwindow.iconphoto(True, logo)
@@ -51,9 +51,6 @@ class Gui:
 
         # Sets the starting position
         self.__game.set_position()
-        
-        # Current board assigned to a variable
-        self.__current_board = self.__game.get_board()
 
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
@@ -103,7 +100,7 @@ class Gui:
         # TODO: remove highlight when resetting
         self.__game_menu.add_command(label="Reset position",
                                      command=lambda: [self.__game.set_position(),
-                                     self.load_position(self.__current_board),
+                                     self.load_position(self.__game.get_board()),
                                      self.__game.set_turn("white")])
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
@@ -137,7 +134,7 @@ class Gui:
                                           font=("Arial", 10))
 
         # Load start position
-        self.load_position(self.__current_board)
+        self.load_position(self.__game.get_board())
 
 
     def ai_move(self):
@@ -148,19 +145,17 @@ class Gui:
             pass
 
         elif self.__ai_playstyle == "Defensive":
-                old, new = ai.calculated_move(self.__game, self.__current_board, "black")
+                old, new = ai.calculated_move(self.__game, self.__game.get_board(), "black")
                 if new is None:
                     self.__checkmate_label.grid(row=10, column=1)
                 else:
                     self.__game.move_piece(old, new)
-                    self.__current_board = self.__game.get_board()
-                    self.load_position(self.__current_board)
+                    self.load_position(self.__game.get_board())
 
         #TODO checkmate (also modify ai.random_move)
         elif self.__ai_playstyle == "Random":
-            ai.random_move(self.__game, self.__current_board, "black")
-            self.__current_board = self.__game.get_board()
-            self.load_position(self.__current_board)
+            ai.random_move(self.__game, self.__game.get_board(), "black")
+            self.load_position(self.__game.get_board())
         
         elif self.__ai_playstyle == "Mixed":
             pass
@@ -324,6 +319,7 @@ class Gui:
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"500x150+{main_x + 20}+{main_y + 20}")
+        popup.resizable(False, False)
 
         usr_input = tk.StringVar(popup)
         entry = tk.Entry(popup,textvariable=usr_input, width=65)
@@ -332,13 +328,14 @@ class Gui:
         def set_pos():
             if self.__game.set_position(entry.get()):
                 self.load_position(self.__game.get_board())
-                self.__current_board = self.__game.get_board()
+                error_label = tk.Label(popup, text=" Valid FEN-string ", fg="green")
+                error_label.grid(row=2, pady=10)
             else:
                 error_label = tk.Label(popup, text="Invalid FEN-string", fg="red")
-                error_label.grid(row=1)
+                error_label.grid(row=2, pady=10)
         
         load_button = tk.Button(popup, text="Load", command=set_pos)
-        load_button.grid(row=2, column=0)
+        load_button.grid(row=1, column=0)
 
 
     def style_popup(self):
@@ -390,6 +387,7 @@ class Gui:
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"300x150+{main_x + 20}+{main_y + 20}")
+        popup.resizable(False, False)
 
         pick_highlight_color = tk.Button(popup, text="Highlight color...")
         pick_highlight_color.config(command= lambda: set_color("highlight"))
@@ -433,6 +431,7 @@ class Gui:
         main_x = self.__mainwindow.winfo_rootx()
         main_y = self.__mainwindow.winfo_rooty()
         popup.geometry(f"275x175+{main_x + 20}+{main_y + 20}")
+        popup.resizable(False, False)
 
         ai_playstyle_1 = tk.Radiobutton(popup, text="Defensive", 
                                         variable=self.__ai_playstyle_var,
@@ -503,17 +502,17 @@ class Gui:
         :param column: int, column of the currently clicked square
         """
 
-        if self.__current_board[row][column] is None and self.__first_click:
+        if self.__game.get_board()[row][column] is None and self.__first_click:
             pass
         elif self.__first_click:
             self.__old_position = (row, column)
             self.__first_click = False
         else:
             self.__new_position = (row, column)
-            # If move_piece-function returns True i.e. the move is legal,
+            # If game.move_piece-function returns True i.e. the move is legal,
             # move the pieces
             if self.__game.move_piece(self.__old_position, self.__new_position):
-                self.load_position(self.__current_board)
+                self.load_position(self.__game.get_board())
                 if self.__old_position != self.__new_position:
                     winsound.Beep(587, 100)
                     self.ai_move()

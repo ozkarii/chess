@@ -10,15 +10,7 @@ import random
 import copy
 
 
-def evaluate_position(board):
-    """Returns a tuple which contains the sum of the piece's values
-    for white and black respectively.
-
-    :param board: list, board data structure
-    :return: tuple, material value of the position (white, black)
-    """
-    
-    piece_values = {
+PIECE_VALUES = {
     "p": 1, "P": 1,
     "n": 3, "N": 3,
     "b": 3, "B": 3,
@@ -26,7 +18,15 @@ def evaluate_position(board):
     "q": 9, "Q": 9,
     "k": 100, "K": 100
     }
-    
+
+def evaluate_position(board):
+    """Returns a tuple which contains the sum of the piece's values
+    for white and black respectively.
+
+    :param board: list, board data structure
+    :return: tuple, material value of the position (white, black)
+    """
+
     white_pieces = [piece for row in board 
                     for piece in row if piece is not None and piece.isupper()]
     black_pieces = [piece for row in board 
@@ -36,10 +36,10 @@ def evaluate_position(board):
     black_value = 0
 
     for i in white_pieces:
-        white_value += piece_values[i]
+        white_value += PIECE_VALUES[i]
 
     for j in black_pieces:
-        black_value += piece_values[j]
+        black_value += PIECE_VALUES[j]
     
 
     return white_value, black_value
@@ -77,17 +77,29 @@ def random_move(game, board, color):
     :param board: list, board before the move
     :param color: str, color of the piece to be moved
     """
-    
-    while True:
-        rand_new_y, rand_new_x = random.randint(0,7), random.randint(0,7)
-        rand_new_pos = (rand_new_y, rand_new_x)
-        rand_old_pos = random.choice(piece_squares(board, color))
-        # If the move is legal, make it, and break
-        if game.move_is_legal(rand_old_pos, rand_new_pos, test=True):
-            game.move_piece(rand_old_pos, rand_new_pos, test=False)
-            break
+    moves = []
+    for old_pos in piece_squares(board, color):
+        for new_y in range(8):
+            for new_x in range(8):
+                if game.move_is_legal(old_pos, (new_y, new_x), test=True):
+                    moves.append((old_pos, (new_y, new_x)))
+    old, new = random.choice(moves)
+    game.move_piece(old, new)
 
 
+    # while True:
+    #     rand_new_y, rand_new_x = random.randint(0,7), random.randint(0,7)
+    #     rand_new_pos = (rand_new_y, rand_new_x)
+    #     rand_old_pos = random.choice(piece_squares(board, color))
+    #     # If the move is legal, make it, and break
+    #     if game.move_is_legal(rand_old_pos, rand_new_pos, test=True):
+    #         game.move_piece(rand_old_pos, rand_new_pos, test=False)
+    #         break
+        
+
+
+# TODO: init a new game object for testing purposes instead of
+# doing everything on the actual game object
 def calculated_move(game, board, color):
     """Calculates the best legal move (currently only for black).
     Calculations are based on trying to make a move that allows
@@ -189,3 +201,5 @@ def calculated_move(game, board, color):
         #     print(board)
         best_move = random.choice(max_keys)
         return best_move
+
+
