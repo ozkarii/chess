@@ -68,7 +68,7 @@ class Game:
             try:
                 for char in fen_string:
                     
-                    if char.lower() not in ["p", "n", "b", "r", "q", "k", "/"] \
+                    if char.lower() not in ["p", "n", "b", "r", "q", "k", "/"]\
                         and not char.isnumeric() or char == "0":
                         return False
                     elif char == "/":

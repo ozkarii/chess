@@ -93,11 +93,11 @@ class Gui:
         # Game menu
         self.__game_menu = tk.Menu(self.__menubar, tearoff=0)
         self.__game_menu.add_command(label="Load position", 
-                                     command=self.load_position_popup)
+                                command=self.load_position_popup)
         self.__game_menu.add_command(label="Reset position",
-                                     command=lambda: [self.__game.set_position(),
-                                     self.load_position(self.__game.get_board()),
-                                     self.__game.set_turn("white")])
+                                command=lambda: [self.__game.set_position(),
+                                self.load_position(self.__game.get_board()),
+                                self.__game.set_turn("white")])
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
@@ -126,8 +126,8 @@ class Gui:
         tk.Label(self.__mainwindow, text="   ").grid(row=2, column=9)
 
         # Checkmate label
-        self.__checkmate_label = tk.Label(self.__mainwindow, text="Checkmate!", fg="red",
-                                          font=("Arial", 10))
+        self.__checkmate_label = tk.Label(self.__mainwindow, text="Checkmate!",
+                                          fg="red", font=("Arial", 10))
 
         # Load start position
         self.load_position(self.__game.get_board())
@@ -141,7 +141,8 @@ class Gui:
             pass
 
         elif self.__ai_playstyle == "Defensive":
-                old, new = ai.calculated_move(self.__game, self.__game.get_board(), "black")
+                old, new = ai.calculated_move(self.__game, 
+                                              self.__game.get_board(), "black")
                 if new is None:
                     self.__checkmate_label.grid(row=10, column=1)
                 else:
@@ -182,17 +183,20 @@ class Gui:
                 new_color_square = None
                 for i in range(0,8):
                     for j in range(0,8):
-                        if self.__squares[i][j].cget("bg") == self.__highlight_color:
+                        if self.__squares[i][j].cget("bg") == \
+                            self.__highlight_color:
                             new_color_square = (i, j)
                             break
                     if new_color_square:
                         break
 
-                # If there's already a new_color square, change it to the original color
+                # If there's already a new_color square, 
+                # change it to the original color
                 if new_color_square:
                     previous_row = new_color_square[0]
                     previous_column = new_color_square[1]
-                    if self.__game.square_is_dark(previous_row, previous_column):
+                    if self.__game.square_is_dark(previous_row,
+                                                  previous_column):
                         self.__squares[previous_row][previous_column].config(
                             bg=self.__dark_square_color)
                     else:
@@ -323,10 +327,12 @@ class Gui:
         def set_pos():
             if self.__game.set_position(entry.get()):
                 self.load_position(self.__game.get_board())
-                error_label = tk.Label(popup, text=" Valid FEN-string ", fg="green")
+                error_label = tk.Label(popup, text=" Valid FEN-string ",
+                                       fg="green")
                 error_label.grid(row=2, pady=10)
             else:
-                error_label = tk.Label(popup, text="Invalid FEN-string", fg="red")
+                error_label = tk.Label(popup, text="Invalid FEN-string",
+                                       fg="red")
                 error_label.grid(row=2, pady=10)
         
         load_button = tk.Button(popup, text="Load", command=set_pos)
@@ -362,7 +368,8 @@ class Gui:
                 for x in range(0,8):
                     for y in range(0,8):
                         if self.__game.square_is_dark(x, y):
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__dark_square_color)
             
             elif target == "reset":
                 self.__light_square_color = "#f0e1c7"
@@ -371,9 +378,11 @@ class Gui:
                 for x in range(0,8):
                     for y in range(0,8):
                         if self.__game.square_is_dark(x, y):
-                            self.__squares[x][y].config(bg=self.__dark_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__dark_square_color)
                         else:
-                            self.__squares[x][y].config(bg=self.__light_square_color)
+                            self.__squares[x][y].config(
+                                bg=self.__light_square_color)
 
 
         popup = tk.Toplevel(self.__mainwindow)

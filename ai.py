@@ -53,15 +53,18 @@ def piece_squares(board, color):
     """
 
     if color == "white":
-        piece_squares = \
-        [(rc, cc) for rc, row in enumerate(board)
-        for cc, piece in enumerate(row) if piece is not None and piece.isupper()]
+        piece_squares = [(rc, cc) for rc, row in enumerate(board)
+        for cc, piece in enumerate(row) if piece is not None 
+        and piece.isupper()]
+
         return piece_squares
 
     elif color == "black":
         piece_squares = \
         [(rc, cc) for rc, row in enumerate(board)
-        for cc, piece in enumerate(row) if piece is not None and piece.islower()]
+        for cc, piece in enumerate(row) if piece is not None
+        and piece.islower()]
+
         return piece_squares
 
     else:
@@ -143,7 +146,8 @@ def calculated_move(game, board, color):
                                     for j in range(8):
                                         # Move the white piece to that square
                                         # if the move is legal
-                                        if game.move_piece(white_pos, (i, j), test=True):
+                                        if game.move_piece(white_pos, (i, j), 
+                                                           test=True):
                                             # Evaluate black's material after
                                             # white's move and add the value
                                             # to the list
@@ -154,12 +158,12 @@ def calculated_move(game, board, color):
                                                 tmp_board)
                                             # Set the position back to
                                             # how it was before white's move
-                                            game.set_position_from_list(new_board)
+                                            game.set_position_from_list(
+                                                new_board)
                                         else:
                                             continue
                             move_eval[(old_pos, new_pos)] = \
                             min(black_evaluations)
-
                             game.set_position_from_list(old_board)
                             break
 
