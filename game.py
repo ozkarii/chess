@@ -5,12 +5,11 @@ Author: Oskari Heinonen
 Logic for chess
 """
 
+import copy
 
 class Game:
     """This class handles the game logic (moves, captures, turns etc.)
     """
-
-    START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
     def __init__(self):
         """Initializes necessary things for the game
@@ -30,6 +29,11 @@ class Game:
 
         # Turn counter
         self.__white_turn = True
+        self.__playing_as_white = True
+
+        
+        self.__START_POSITION_WHITE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+        self.__START_POSITION_BLACK = "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr"
 
     def get_board(self):
         """Returns the current board
@@ -39,8 +43,24 @@ class Game:
 
         return self.__board
     
+    def set_start_position(self, play_as_white):
+        """
+        """
+        
+        self.set_turn("white")
 
-    def set_position(self, fen_string = START_POSITION):
+        if play_as_white:
+            self.set_position(self.__START_POSITION_WHITE)
+            self.__playing_as_white = True
+            return
+        
+        self.__playing_as_white = False
+        self.set_position(self.__START_POSITION_BLACK)
+        return
+        
+
+
+    def set_position(self, fen_string):
         """Interprates position information in Forsyth-Edwards Notation
         given in <fen_string> and places the pieces to the right places
         in <self.__board>.
@@ -155,7 +175,20 @@ class Game:
         old_square = old_board[old_y][old_x]
         
         transposed_board = self.transpose(old_board)
-        
+
+        # This function assumes white is playing from the bottom
+        # so the board and the given coordinates will be flipped if playing as white
+        # (this could be made more efficient by not flipping on every move)
+        if not self.__playing_as_white:
+            old_board = self.flip_board(old_board)
+            old_pos = (self.flip_coordinate(old_pos[0]), self.flip_coordinate(old_pos[1]))
+            new_pos = (self.flip_coordinate(new_pos[0]), self.flip_coordinate(new_pos[1]))
+            old_y = self.flip_coordinate(old_y)
+            old_x = self.flip_coordinate(old_x)
+            new_y = self.flip_coordinate(new_y)
+            new_x = self.flip_coordinate(new_x)
+            print(old_pos)
+
 
         def check_diagonal():
             """Checks if the new square is in the correct diagonal. 
@@ -248,8 +281,8 @@ class Game:
         
         # Check if correct turn if function not called for testing
         if not test:
-            if old_board[old_y][old_x].isupper() and self.__white_turn or \
-               old_board[old_y][old_x].islower() and not self.__white_turn:
+            if old_square.isupper() and self.__white_turn or \
+               old_square.islower() and not self.__white_turn:
                pass
             else:
                 return False 
@@ -434,7 +467,28 @@ class Game:
                 transposed_board[j][i] = matrix[i][j]
         
         return transposed_board
+    
 
+    def flip_board(self, board):
+        """Flips
+        """
+
+        new_board = copy.deepcopy(board)
+
+        for row in new_board:
+            row.reverse()
+        
+        new_board.reverse()
+        return new_board
+
+    def flip_coordinate(self, coord):
+        """
+        """
+        
+        if coord <= 3:
+            return 7 - coord
+        else:
+            return abs(coord - 7)
 
     def print_board(self):
         """for debug purposes

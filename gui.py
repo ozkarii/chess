@@ -10,13 +10,14 @@ from tkinter import ttk, colorchooser
 import os
 import winsound
 import ai
+import game
 
 
 class Gui:
     """This class handles the gui for the chess game.
     """
 
-    def __init__(self, game):
+    def __init__(self, game: game.Game):
         
         """Initializes the gui-object with an empty chessboard
         and a menu.
@@ -34,7 +35,7 @@ class Gui:
         # Dict for mapping piece names to corresponding PhotoImage-objects
         self.__piece_images = {}
         
-        # Define image-object for empty image
+        # Define image-object for empty square
         self.__empty_image = tk.PhotoImage("pieces/empty.png")
         
         # load style attributes from file
@@ -46,8 +47,8 @@ class Gui:
         # Init an instance of the game class to handle the logic
         self.__game = game
 
-        # Sets the starting position
-        self.__game.set_position()
+        # Init attribut which tells which pieces are played by the player
+        self.__play_as_white = True
 
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
@@ -95,9 +96,7 @@ class Gui:
         self.__game_menu.add_command(label="Load position", 
                                 command=self.load_position_popup)
         self.__game_menu.add_command(label="Reset position",
-                                command=lambda: [self.__game.set_position(),
-                                self.load_position(self.__game.get_board()),
-                                self.__game.set_turn("white")])
+                                command=self.set_start_config)  #### fix?
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
@@ -128,9 +127,37 @@ class Gui:
         # Checkmate label
         self.__checkmate_label = tk.Label(self.__mainwindow, text="Checkmate!",
                                           fg="red", font=("Arial", 10))
+        
+        self.set_start_config()
 
-        # Load start position
+
+    def set_start_config(self):
+        """Asks the player which pieces they want to play and then loads
+        the game's starting configuration accordingly
+        """
+
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
+        popup.title("Play as?")
+        popup.geometry("250x100")
+        popup.resizable(False, False)
+
+        def set_play_as_white(value):
+            self.__play_as_white = value
+            popup.destroy()
+
+        white = tk.Button(popup, text="White", command=lambda: set_play_as_white(True), width=10, height=2)
+        black = tk.Button(popup, text="Black", command=lambda: set_play_as_white(False), width=10, height=2)
+        
+        white.grid(row=0, column=0, padx=10, pady=10)
+        black.grid(row=0, column=1, padx=10, pady=10)
+
+        popup.wait_window()  # Wait for the popup window to be closed
+
+        # Set starting position in the game object
+        self.__game.set_start_position(self.__play_as_white)
         self.load_position(self.__game.get_board())
+        
 
 
     def ai_move(self):
@@ -464,6 +491,25 @@ class Gui:
 
         ai_label = tk.Label(popup, text="AI playstyle", font=("Helvetica", 11))
         ai_label.grid(row=0, padx=60, pady=2)
+
+
+    def play_as_popup(self):
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
+        popup.title("Play as?")
+        popup.geometry(f"220x100+{500}+{500}")
+        popup.resizable(False, False)
+
+        def set_play_as_white(value):
+            setattr(self, '__play_as_white', value)
+            popup.destroy()
+            return value
+
+        white = tk.Button(popup, text="White", command=lambda: set_play_as_white(True), width=10, height=2)
+        black = tk.Button(popup, text="Black", command=lambda: set_play_as_white(False), width=10, height=2)
+        
+        white.grid(row=0, column=0, padx=10, pady=10)
+        black.grid(row=0, column=1, padx=10, pady=10)
 
 
     def load_position(self, board):
