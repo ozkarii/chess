@@ -19,26 +19,33 @@ class Server:
 
         self.__ip = ip
         self.__port = port
+
+        # TCP socket
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-
-    def receive_move(self) -> str:
-        """
-        """
 
         # Bind the socket to a host and port
         self.__socket.bind((self.__ip, self.__port))
 
-        while True:
-            # Listen for incoming connections
-            self.__socket.listen(1)
+        # Listen for incoming connections
+        self.__socket.listen(1)
 
+
+    def receive_move(self) -> str:
+        """Recives data from client and returns it as a string
+        """
+
+        data = None
+
+        while True:
             # Accept a client connection
             conn, addr = self.__socket.accept()
 
             # Receive data from the client
             data = conn.recv(1024).decode()
-            return data
+            
+            if data:
+                return data
+        
 
 
 class Client:
@@ -51,6 +58,8 @@ class Client:
         
         self.__host = host_ip
         self.__port = port
+
+        # TCP socket
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def send_move(self, move):

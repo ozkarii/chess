@@ -187,7 +187,6 @@ class Game:
             old_x = self.flip_coordinate(old_x)
             new_y = self.flip_coordinate(new_y)
             new_x = self.flip_coordinate(new_x)
-            print(old_pos)
 
 
         def check_diagonal():

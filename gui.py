@@ -11,6 +11,7 @@ import os
 import winsound
 import ai
 import game
+from networking import *
 
 
 class Gui:
@@ -47,8 +48,13 @@ class Gui:
         # Init an instance of the game class to handle the logic
         self.__game = game
 
-        # Init attribut which tells which pieces are played by the player
+        # Init attribute which tells which pieces are played by the player
         self.__play_as_white = True
+
+        # Indicates wether or not online mode is enabled
+        self.__playing_online = False
+
+        self.__server = None
 
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
@@ -96,7 +102,7 @@ class Gui:
         self.__game_menu.add_command(label="Load position", 
                                 command=self.load_position_popup)
         self.__game_menu.add_command(label="Reset position",
-                                command=self.set_start_config)  #### fix?
+                                command=self.set_start_config)
         self.__menubar.add_cascade(menu=self.__game_menu, label="Game")
         
         # Settings menu
@@ -104,12 +110,19 @@ class Gui:
         self.__settings_menu.add_command(label="Game", command=self.game_popup)
         self.__settings_menu.add_command(label="Style",
                                          command=self.style_popup)
-        # self.__settings_menu.add_command(label="Network")
         self.__menubar.add_cascade(menu=self.__settings_menu, label="Settings")
+
+        # Online menu
+        self.__online_menu = tk.Menu(self.__menubar, tearoff=0)
+        self.__online_menu.add_command(label="Host game", 
+                                       command=self.host_game_popup)
+        self.__online_menu.add_command(label="Join game",
+                                       command=self.join_game_popup)
+        self.__menubar.add_cascade(menu=self.__online_menu, label="Online")
 
         self.__mainwindow.config(menu=self.__menubar)
         
-        # Labels
+        # Labels TODO fix order
         for y in range(1,9):
             y_label = tk.Label(self.__mainwindow, 
                                text=str(y), font=("Arial", 13)
@@ -136,10 +149,11 @@ class Gui:
         the game's starting configuration accordingly
         """
 
+        # TODO: fix popup not being on top
         popup = tk.Toplevel(self.__mainwindow)
         popup.grab_set()
         popup.title("Play as?")
-        popup.geometry("250x100")
+        popup.geometry("250x100+800+300")
         popup.resizable(False, False)
 
         def set_play_as_white(value):
@@ -157,7 +171,6 @@ class Gui:
         # Set starting position in the game object
         self.__game.set_start_position(self.__play_as_white)
         self.load_position(self.__game.get_board())
-        
 
 
     def ai_move(self):
@@ -182,6 +195,49 @@ class Gui:
         
         elif self.__ai_playstyle == "Mixed":
             pass
+
+
+    def online_move(self):
+        """
+        """
+        data = self.__server.receive_move()
+        old = (int(data[0]), int(data[1]))
+        new = (int(data[2]), int(data[3]))
+        self.__game.move_piece(old, new)
+        self.load_position(self.__game.get_board())
+
+
+    def host_game_popup(self):
+        """
+        """
+
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
+        popup.title("Host game")
+        main_x = self.__mainwindow.winfo_rootx()
+        main_y = self.__mainwindow.winfo_rooty()
+        popup.geometry(f"350x200+{main_x + 125}+{main_y + 200}")
+        popup.resizable(False, False)
+        
+        def start_server():
+            self.__server = Server('localhost', 5000)
+            self.__playing_online = True
+
+        start = tk.Button(popup, text="Start", command=start_server)
+        start.grid()
+
+
+    def join_game_popup(self):
+        """
+        """
+
+        popup = tk.Toplevel(self.__mainwindow)
+        popup.grab_set()
+        popup.title("Join game")
+        main_x = self.__mainwindow.winfo_rootx()
+        main_y = self.__mainwindow.winfo_rooty()
+        popup.geometry(f"350x200+{main_x + 125}+{main_y + 200}")
+        popup.resizable(False, False)
 
 
     def change_square_color(self, row, column):
@@ -545,6 +601,7 @@ class Gui:
                         height = 75
                         )
 
+
     def move_piece(self, row, column):
         """Moves the previously clicked piece to the now clicked square
 
@@ -566,6 +623,8 @@ class Gui:
                 if self.__old_position != self.__new_position:
                     winsound.Beep(587, 100)
                     self.ai_move()
+                    if self.__playing_online:
+                        self.online_move()
                 self.__first_click = True
             else:
                 self.__first_click = True
