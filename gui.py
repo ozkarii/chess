@@ -11,7 +11,8 @@ import os
 import winsound
 import ai
 import game
-from networking import *
+from server import *
+from async_tkinter_loop import async_mainloop, async_handler
 
 
 class Gui:
@@ -45,7 +46,7 @@ class Gui:
         # Load game config attributes from file
         self.game_config_from_file("config/game.txt")
         
-        # Init an instance of the game class to handle the logic
+        # Pass the game object to an attribute
         self.__game = game
 
         # Init attribute which tells which pieces are played by the player
@@ -89,10 +90,13 @@ class Gui:
         # Adds commands to all buttons
         for row_count, row in enumerate(self.__squares):
             for column_count, square in enumerate(row):
-                square.config(command=lambda row=row_count,
-                              column=column_count: 
-                              [self.move_piece(row, column),
-                               self.change_square_color(row, column)])
+                square.config(command=async_handler(lambda row=row_count,
+                              column=column_count: self.move_piece(row, column)))
+                
+                # square.config(command=lambda row=row_count,
+                #               column=column_count: 
+                #               [self.move_piece(row, column),
+                #                self.change_square_color(row, column)])
 
         # Menubar
         self.__menubar = tk.Menu(self.__mainwindow, tearoff=0)
@@ -197,14 +201,14 @@ class Gui:
             pass
 
 
-    def online_move(self):
-        """
-        """
-        data = self.__server.receive_move()
-        old = (int(data[0]), int(data[1]))
-        new = (int(data[2]), int(data[3]))
-        self.__game.move_piece(old, new)
-        self.load_position(self.__game.get_board())
+    # async def online_move(self):
+    #     """
+    #     """
+    #     data = await self.__server.receive_move()
+    #     old = (int(data[0]), int(data[1]))
+    #     new = (int(data[2]), int(data[3]))
+    #     self.__game.move_piece(old, new)
+    #     self.load_position(self.__game.get_board())
 
 
     def host_game_popup(self):
@@ -219,11 +223,14 @@ class Gui:
         popup.geometry(f"350x200+{main_x + 125}+{main_y + 200}")
         popup.resizable(False, False)
         
-        def start_server():
-            self.__server = Server('localhost', 5000)
+        async def start_server():
+            self.__game.enable_online_mode()
             self.__playing_online = True
+            self.__server = Server('localhost', 5000)
+            await self.__server.start_server()
+    
 
-        start = tk.Button(popup, text="Start", command=start_server)
+        start = tk.Button(popup, text="Start", command=async_handler(start_server))
         start.grid()
 
 
@@ -602,7 +609,7 @@ class Gui:
                         )
 
 
-    def move_piece(self, row, column):
+    async def move_piece(self, row, column):
         """Moves the previously clicked piece to the now clicked square
 
         :param row: int, row of the currently clicked square
@@ -623,8 +630,8 @@ class Gui:
                 if self.__old_position != self.__new_position:
                     winsound.Beep(587, 100)
                     self.ai_move()
-                    if self.__playing_online:
-                        self.online_move()
+                    # if self.__playing_online:
+                    #     await self.online_move()
                 self.__first_click = True
             else:
                 self.__first_click = True
@@ -633,5 +640,5 @@ class Gui:
     def start(self):
         """Executes mainloop for <self.__mainwindow> ie. starts the gui.
         """
-        
-        self.__mainwindow.mainloop()
+        async_mainloop(self.__mainwindow)
+        # self.__mainwindow.mainloop()

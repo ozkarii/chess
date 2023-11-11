@@ -5,7 +5,7 @@ Author: Oskari Heinonen
 Logic for chess
 """
 
-import copy
+from utils import transpose, flip_board, flip_coordinate
 
 class Game:
     """This class handles the game logic (moves, captures, turns etc.)
@@ -29,7 +29,10 @@ class Game:
 
         # Turn counter
         self.__white_turn = True
+
         self.__playing_as_white = True
+
+        self.__playing_online = False
 
         
         self.__START_POSITION_WHITE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
@@ -58,7 +61,6 @@ class Game:
         self.set_position(self.__START_POSITION_BLACK)
         return
         
-
 
     def set_position(self, fen_string):
         """Interprates position information in Forsyth-Edwards Notation
@@ -174,19 +176,20 @@ class Game:
 
         old_square = old_board[old_y][old_x]
         
-        transposed_board = self.transpose(old_board)
+        transposed_board = transpose(old_board)
 
-        # This function assumes white is playing from the bottom
-        # so the board and the given coordinates will be flipped if playing as white
+        # The rest of the fuction assumes white is playing from the bottom
+        # so if black is playing from bottom, the board will be flipped so that
+        # the logic works
         # (this could be made more efficient by not flipping on every move)
         if not self.__playing_as_white:
-            old_board = self.flip_board(old_board)
-            old_pos = (self.flip_coordinate(old_pos[0]), self.flip_coordinate(old_pos[1]))
-            new_pos = (self.flip_coordinate(new_pos[0]), self.flip_coordinate(new_pos[1]))
-            old_y = self.flip_coordinate(old_y)
-            old_x = self.flip_coordinate(old_x)
-            new_y = self.flip_coordinate(new_y)
-            new_x = self.flip_coordinate(new_x)
+            old_board = flip_board(old_board)
+            old_pos = (flip_coordinate(old_pos[0]), flip_coordinate(old_pos[1]))
+            new_pos = (flip_coordinate(new_pos[0]), flip_coordinate(new_pos[1]))
+            old_y = flip_coordinate(old_y)
+            old_x = flip_coordinate(old_x)
+            new_y = flip_coordinate(new_y)
+            new_x = flip_coordinate(new_x)
 
 
         def check_diagonal():
@@ -280,6 +283,11 @@ class Game:
         
         # Check if correct turn if function not called for testing
         if not test:
+            if self.__playing_online:
+                if old_square.isupper() and self.__playing_as_white or \
+                   old_square.islower() and not self.__playing_as_white:
+                    return False
+                
             if old_square.isupper() and self.__white_turn or \
                old_square.islower() and not self.__white_turn:
                pass
@@ -450,44 +458,16 @@ class Game:
             raise ValueError("Invalid color, must be 'black' or 'white'")
 
 
-    def transpose(self, matrix):
-        """Returns the transpose of a matrix-like list data structure
-        such as self.__board.
-
-        :param matrix: list, matrix-like list[list[]] data-structure
-        :return: list, input matrix's transpose
+    def enable_online_mode(self):
+        """Enables online play
         """
+        self.__playing_online = True
 
-        num_rows = len(matrix)
-        num_cols = len(matrix[0])
-        transposed_board = [[None] * num_rows for _ in range(num_cols)]
-        for i in range(num_rows):
-            for j in range(num_cols):
-                transposed_board[j][i] = matrix[i][j]
-        
-        return transposed_board
-    
 
-    def flip_board(self, board):
-        """Flips
+    def disable_online_mode(self):
+        """Disables online play
         """
-
-        new_board = copy.deepcopy(board)
-
-        for row in new_board:
-            row.reverse()
-        
-        new_board.reverse()
-        return new_board
-
-    def flip_coordinate(self, coord):
-        """
-        """
-        
-        if coord <= 3:
-            return 7 - coord
-        else:
-            return abs(coord - 7)
+        self.__playing_online = False
 
     def print_board(self):
         """for debug purposes
