@@ -90,13 +90,12 @@ class Gui:
         # Adds commands to all buttons
         for row_count, row in enumerate(self.__squares):
             for column_count, square in enumerate(row):
-                square.config(command=async_handler(lambda row=row_count,
-                              column=column_count: self.move_piece(row, column)))
-                
-                # square.config(command=lambda row=row_count,
-                #               column=column_count: 
-                #               [self.move_piece(row, column),
-                #                self.change_square_color(row, column)])
+                # square.config(command=async_handler(lambda row=row_count,
+                #               column=column_count: self.move_piece(row, column)))
+                square.config(command=lambda row=row_count,
+                              column=column_count: 
+                              [self.move_piece(row, column),
+                               self.change_square_color(row, column)])
 
         # Menubar
         self.__menubar = tk.Menu(self.__mainwindow, tearoff=0)
@@ -201,16 +200,6 @@ class Gui:
             pass
 
 
-    # async def online_move(self):
-    #     """
-    #     """
-    #     data = await self.__server.receive_move()
-    #     old = (int(data[0]), int(data[1]))
-    #     new = (int(data[2]), int(data[3]))
-    #     self.__game.move_piece(old, new)
-    #     self.load_position(self.__game.get_board())
-
-
     def host_game_popup(self):
         """
         """
@@ -226,7 +215,7 @@ class Gui:
         async def start_server():
             self.__game.enable_online_mode()
             self.__playing_online = True
-            self.__server = Server('localhost', 5000)
+            self.__server = Server('localhost', 5000, self)
             await self.__server.start_server()
     
 
@@ -609,7 +598,7 @@ class Gui:
                         )
 
 
-    async def move_piece(self, row, column):
+    def move_piece(self, row, column):
         """Moves the previously clicked piece to the now clicked square
 
         :param row: int, row of the currently clicked square
@@ -635,6 +624,15 @@ class Gui:
                 self.__first_click = True
             else:
                 self.__first_click = True
+
+    def online_move_piece(self, old_pos, new_pos):
+        """This function gets (currently) only called by the server
+        when it receives a move from the client.
+        """
+
+        if self.__game.move_piece(old_pos, new_pos, True):
+            self.load_position(self.__game.get_board())
+            self.__game.chance_turn()
 
 
     def start(self):

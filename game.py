@@ -284,8 +284,8 @@ class Game:
         # Check if correct turn if function not called for testing
         if not test:
             if self.__playing_online:
-                if old_square.isupper() and self.__playing_as_white or \
-                   old_square.islower() and not self.__playing_as_white:
+                if (old_square.islower() and self.__playing_as_white) or \
+                   (old_square.isupper() and not self.__playing_as_white):
                     return False
                 
             if old_square.isupper() and self.__white_turn or \
@@ -425,6 +425,11 @@ class Game:
                 return True
         else:
             return False
+
+    def chance_turn(self):
+        """Simply changes turn
+        """
+        self.__white_turn = not self.__white_turn
 
 
     def square_is_dark(self, row, column):
