@@ -1,3 +1,5 @@
 **/__pycache__/
 **/.vscode/
 test.py
+test_server.py
+test_client.py
