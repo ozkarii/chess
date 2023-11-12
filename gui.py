@@ -235,6 +235,21 @@ class Gui:
         popup.geometry(f"350x200+{main_x + 125}+{main_y + 200}")
         popup.resizable(False, False)
 
+        ip = tk.StringVar(popup)
+        port = tk.StringVar(popup)
+        
+        ip_entry = tk.Entry(popup, textvariable=ip)
+        port_entry = tk.Entry(popup, textvariable=port)
+        ip_label = tk.Label(popup, text="Host IP")
+        port_label = tk.Label(popup, text="Host port")
+        connect_btn = tk.Button(popup, text="Connect")
+
+        ip_entry.grid(row=1, column=0)
+        port_entry.grid(row=1, column=1)
+        ip_label.grid(row=0, column=0)
+        port_label.grid(row=0, column=1)
+        connect_btn.grid(row=1, column=2)
+
 
     def change_square_color(self, row, column):
         """Changes the color of a square in the chessboard.
