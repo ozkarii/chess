@@ -6,6 +6,7 @@ Written in standard python. Start by running main.py.
 - Basic AI to play against
 - Customizable board
 - 2 player mode
+- Online play
 
 ## Limitations:
 - Can only play as white against AI
