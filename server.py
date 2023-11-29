@@ -16,9 +16,9 @@ class Server:
         """
         """
 
-        self.ip = ip
-        self.port = port
-        self.app = app
+        self.__ip = ip
+        self.__port = port
+        self.__app = app
         # self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.__socket.bind((self.ip, self.port))
         # self.__socket.listen(1)
@@ -32,12 +32,9 @@ class Server:
         # Read data from the client
         data = await reader.read(4)
 
-        print(data)
-
         # Decode the received bytes into a string
         move = list(map(int, data.decode()))
 
-        print(move)
         # Get the client's address
         addr = writer.get_extra_info('peername')
 
@@ -46,9 +43,9 @@ class Server:
 
         # Process the received data as needed
         # (This part would be where you handle the game logic)
-        
-        self.app.online_move_piece((move[0], move[1]),
-                                   (move[2], move[3]))
+        if data != '9999':
+            self.__app.online_move_piece((move[0], move[1]),
+                                       (move[2], move[3]))
 
         # Close the connection
         print("Closing the connection")
@@ -58,8 +55,8 @@ class Server:
     async def start_server(self):
         server = await asyncio.start_server(
             self.handle_client,
-            host=self.ip,
-            port=self.port
+            host=self.__ip,
+            port=self.__port
         )
 
         addr = server.sockets[0].getsockname()

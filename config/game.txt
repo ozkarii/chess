@@ -1,1 +1,1 @@
-ai_playstyle;Defensive
+ai_playstyle;None

@@ -12,6 +12,7 @@ import winsound
 import ai
 import game
 from server import *
+from client import *
 from async_tkinter_loop import async_mainloop, async_handler
 
 
@@ -53,9 +54,13 @@ class Gui:
         self.__play_as_white = True
 
         # Indicates wether or not online mode is enabled
-        self.__playing_online = False
+        self.__playing_as_server = False
+
+        self.__playing_as_client = False
 
         self.__server = None
+
+        self.__client = None
 
         # True: next click will be the first meaning that clicking selects
         # the piece to be moved.
@@ -152,9 +157,11 @@ class Gui:
         the game's starting configuration accordingly
         """
 
-        # TODO: fix popup not being on top
         popup = tk.Toplevel(self.__mainwindow)
+        self.__mainwindow.lift()
         popup.grab_set()
+        popup.focus_force()
+        popup.lift(self.__mainwindow)
         popup.title("Play as?")
         popup.geometry("250x100+800+300")
         popup.resizable(False, False)
@@ -162,6 +169,7 @@ class Gui:
         def set_play_as_white(value):
             self.__play_as_white = value
             popup.destroy()
+            self.__mainwindow.lift()
 
         white = tk.Button(popup, text="White", command=lambda: set_play_as_white(True), width=10, height=2)
         black = tk.Button(popup, text="Black", command=lambda: set_play_as_white(False), width=10, height=2)
@@ -214,13 +222,18 @@ class Gui:
         
         async def start_server():
             self.__game.enable_online_mode()
-            self.__playing_online = True
+            self.__playing_as_server = True
             self.__server = Server('localhost', 5000, self)
             await self.__server.start_server()
     
 
         start = tk.Button(popup, text="Start", command=async_handler(start_server))
-        start.grid()
+        start.grid(row=1, column=2)
+        port = tk.StringVar(popup, value="5000")
+        port_entry = tk.Entry(popup, textvariable=port)
+        port_entry.grid(row=1, column=1)
+        port_label = tk.Label(popup, text="Port")
+        port_label.grid(row=0, column=1)
 
 
     def join_game_popup(self):
@@ -235,6 +248,11 @@ class Gui:
         popup.geometry(f"350x200+{main_x + 125}+{main_y + 200}")
         popup.resizable(False, False)
 
+        def first_handshake():
+            self.__client = Client(ip.get(), port.get())
+            self.__client.send_move("9999")
+            self.__playing_as_client
+
         ip = tk.StringVar(popup)
         port = tk.StringVar(popup)
         
@@ -242,7 +260,7 @@ class Gui:
         port_entry = tk.Entry(popup, textvariable=port)
         ip_label = tk.Label(popup, text="Host IP")
         port_label = tk.Label(popup, text="Host port")
-        connect_btn = tk.Button(popup, text="Connect")
+        connect_btn = tk.Button(popup, text="Connect", command=first_handshake)
 
         ip_entry.grid(row=1, column=0)
         port_entry.grid(row=1, column=1)

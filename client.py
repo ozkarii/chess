@@ -19,7 +19,10 @@ class Client:
         """
         """
         
-        self.__socket.connect((self.__host, self.__port))
-        message = move
-        self.__socket.sendall(message.encode())
+        try:
+            self.__socket.connect((int(self.__host), int(self.__port)))
+            message = move
+            self.__socket.sendall(message.encode())
+        except TypeError:
+            print("invalid ip or port")
 
